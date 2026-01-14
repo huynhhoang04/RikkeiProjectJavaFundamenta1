@@ -83,7 +83,6 @@ public class AdminDAOImpl implements IAdminDAO {
 
                 courses.add(new Course(id, name, duration, instructor, created_at));
             }
-
             return courses;
         } catch (SQLException e) {
             throw new RuntimeException(e);
