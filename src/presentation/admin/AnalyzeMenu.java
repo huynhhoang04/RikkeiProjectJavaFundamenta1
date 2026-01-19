@@ -1,12 +1,15 @@
 package presentation.admin;
 
 import business.impl.AdminSevicesImpl;
+import dao.IAdminDAO;
+import dao.impl.AdminDAOImpl;
 
 import java.util.Scanner;
 
 public class AnalyzeMenu {
     Scanner sc = new Scanner(System.in);
-    AdminSevicesImpl sevices = new AdminSevicesImpl();
+    IAdminDAO dao = new AdminDAOImpl();
+    AdminSevicesImpl sevices = new AdminSevicesImpl(dao);
     public void showMenu(){
         menuChinh: while(true){
             System.out.println("============Thống kê=============");

@@ -10,10 +10,10 @@ public interface IStudentServices
 {
     Student login(String email, String password);
     List<Course> showListCourses();
-    void findCourse();
+    List<Course> findCourse(String key);
     boolean registerCourse(int studentID, int courseID);
     List<EnrollmentDetailDTO> getHistory(int Id);
     List<EnrollmentDetailDTO> sortEnrollment(int studentId, String sortBy, String sortOrder);
-    void cancerEnrollment(int studentID);
-    void changePassword(int studentID);
+    boolean cancelEnrollment(int studentID, int enrollmentID);
+    boolean changePassword(int studentID, String email, String oldPass, String newPass);
 }

@@ -5,7 +5,9 @@ import model.Admin;
 import model.Course;
 import model.Enrollment;
 import model.Student;
+import uttil.CourseMapper;
 import uttil.DBConection;
+import uttil.StudentMapper;
 
 import java.sql.*;
 import java.util.*;
@@ -69,19 +71,12 @@ public class AdminDAOImpl implements IAdminDAO {
     @Override
     public List<Course> listCourse() {
         String query = "select * from course";
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement prest = conn.prepareStatement(query);) {
             ResultSet rs = prest.executeQuery();
             List<Course> courses = new ArrayList<>();
             while (rs.next()) {
-                int id = rs.getInt("id");
-                String name = rs.getString("name");
-                int duration = rs.getInt("duration");
-                String instructor = rs.getString("instructor");
-                Date  created_at = rs.getDate("created_at");
-
-                courses.add(new Course(id, name, duration, instructor, created_at));
+                courses.add(CourseMapper.toCourse(rs));
             }
             return courses;
         } catch (SQLException e) {
@@ -90,76 +85,68 @@ public class AdminDAOImpl implements IAdminDAO {
     }
 
     @Override
-    public void addCourse(String name, int duration,  String instructor) {
+    public boolean addCourse(String name, int duration,  String instructor) {
         String query = "insert into course(name, duration, instructor) values(?,?,?)";
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement prest = conn.prepareStatement(query);) {
 
             prest.setString(1, name);
             prest.setInt(2, duration);
             prest.setString(3, instructor);
 
-            prest.executeUpdate();
-            ResultSet rs = prest.getGeneratedKeys();
-            if (rs.next()) {
-                int id = rs.getInt(1);
-                System.out.println("================================");
-                System.out.println("Thêm khóa học thành công");
-                System.out.println("Thông tin khóa học :");
-                PreparedStatement returnCourse =  conn.prepareStatement("select * from course where id=?");
-                returnCourse.setInt(1, id);
-                ResultSet rs1 = returnCourse.executeQuery();
-                if (rs1.next()) {
-                    int course_id = rs1.getInt("id");
-                    String course_name = rs1.getString("name");
-                    int course_duration = rs1.getInt("duration");
-                    String course_instructor = rs1.getString("instructor");
-                    Date course_created_at = rs1.getDate("created_at");
+            int change =  prest.executeUpdate();
+            return change > 0;
 
-                    System.out.println(new Course(course_id, course_name, course_duration, course_instructor, course_created_at));
-                    System.out.println("================================");
-                }
-            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
+    // 1. Hàm sửa Tên (Nhận String)
     @Override
-    public void editCourse(int id, String editPart,String editContent) {
-        String query = new String();
-        if(editPart.equals("name")){
-            query = "update course set name=? where id=?";
-        }
-        if(editPart.equals("duration")){
-            query = "update course set duration=?::int where id=?";
-        }
-        if(editPart.equals("instructor")){
-            query = "update course set instructor=? where id=?";
-        }
+    public boolean updateCourseName(int id, String newName) {
+        String query = "UPDATE course SET name = ? WHERE id = ?";
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
 
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);
-
-            prest.setString(1, editContent);
-            prest.setInt(2, id);
-            prest.executeUpdate();
-            System.out.println("Update thành công!");
-            PreparedStatement prest2 = conn.prepareStatement("select * from course where id=?");
-            prest2.setInt(1, id);
-            ResultSet rs = prest2.executeQuery();
-            if (rs.next()) {
-                int course_id = rs.getInt("id");
-                String course_name = rs.getString("name");
-                int course_duration = rs.getInt("duration");
-                String course_instructor = rs.getString("instructor");
-                Date course_created_at = rs.getDate("created_at");
-                System.out.println(new Course(course_id,course_name, course_duration, course_instructor, course_created_at));
-            }
+            ps.setString(1, newName);
+            ps.setInt(2, id);
+            return ps.executeUpdate() > 0; // Trả về true nếu update thành công
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // 2. Hàm sửa Thời gian (Nhận INT -> Chuẩn kiểu dữ liệu)
+    @Override
+    public boolean updateCourseDuration(int id, int newDuration) {
+        String query = "UPDATE course SET duration = ? WHERE id = ?"; // Không cần ::int nữa
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, newDuration); // Dùng setInt chuẩn chỉ
+            ps.setInt(2, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // 3. Hàm sửa Giảng viên (Nhận String)
+    @Override
+    public boolean updateCourseInstructor(int id, String newInstructor) {
+        String query = "UPDATE course SET instructor = ? WHERE id = ?";
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setString(1, newInstructor);
+            ps.setInt(2, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
@@ -190,19 +177,6 @@ public class AdminDAOImpl implements IAdminDAO {
     }
 
     @Override
-    public List<Course> sortListCourse(List<Course> courses , String sortBy) {
-        if(sortBy.equals("name")){
-            courses.sort((c1,c2) -> c1.getName().compareToIgnoreCase(c2.getName()));
-        }
-
-        if(sortBy.equals("duration")){
-            courses.sort((c1,c2) -> c1.getDuration() - c2.getDuration());
-        }
-
-        return courses;
-    }
-
-    @Override
     public boolean checkCourse(int id) {
         String query = "select count(*) from course where id=?";
         try {
@@ -221,14 +195,14 @@ public class AdminDAOImpl implements IAdminDAO {
     }
 
     @Override
-    public void deleteCourse(int id) {
+    public boolean deleteCourse(int id) {
         String query = "delete from course where id=?";
         try {
             Connection conn = DBConection.getConnection();
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setInt(1, id);
-            ps.executeUpdate();
-            System.out.println("Thành công!");
+            int change = ps.executeUpdate();
+            return change > 0;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -259,22 +233,11 @@ public class AdminDAOImpl implements IAdminDAO {
     public List<Student> listStudent() {
         String query = "select * from student";
         List<Student> students = new ArrayList<>();
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement prest = conn.prepareStatement(query);) {
             ResultSet rs = prest.executeQuery();
             while (rs.next()) {
-                int id = rs.getInt("id");
-                String name = rs.getString("name");
-                Date date_of_birth = rs.getDate("dob");
-                String email = rs.getString("email");
-                Boolean gender = rs.getBoolean("gender");
-                String strGender = gender? "Nam" : "Nữ";
-                String phoneNumber = rs.getString("phone");
-                String password = rs.getString("password");
-                Date created_at = rs.getDate("created_at");
-
-                students.add(new Student(id, name, date_of_birth, email, strGender, phoneNumber, password, created_at));
+                students.add(StudentMapper.toStudent(rs));
             }
 
             return students;
@@ -284,24 +247,19 @@ public class AdminDAOImpl implements IAdminDAO {
     }
 
     @Override
-    public void addStudent(String name, Date dob, String email, Boolean gender, String phone, String password) {
+    public boolean addStudent(String name, Date dob, String email, Boolean gender, String phone, String password) {
         String query = "insert into student(name, dob, email, gender, phone, password) values (?,?,?,?::bit,?,?)";
         try {
             Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+            PreparedStatement prest = conn.prepareStatement(query);
             prest.setString(1, name);
             prest.setDate(2, new java.sql.Date(dob.getTime()));
             prest.setString(3, email);
             prest.setInt(4, gender? 1:0);
             prest.setString(5, phone);
             prest.setString(6, password);
-            prest.executeUpdate();
-
-            ResultSet rs = prest.getGeneratedKeys();
-            if (rs.next()) {
-                int id = rs.getInt(1);
-                showByStudentID(id);
-            }
+            int change = prest.executeUpdate();
+            return change > 0;
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
@@ -310,9 +268,8 @@ public class AdminDAOImpl implements IAdminDAO {
     @Override
     public boolean checkEmailExists(String email) {
         String query = "select count(*) as cnt from student where email = ?";
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement prest = conn.prepareStatement(query);){
             prest.setString(1, email);
             ResultSet rs = prest.executeQuery();
             if (rs.next()) {
@@ -330,70 +287,60 @@ public class AdminDAOImpl implements IAdminDAO {
     }
 
     @Override
-    public void editStudent(int id, String editPart, String editContent) {
-        String query = new String();
-        if (editPart.equals("name")) {
-            query = "update student set name=? where id=?";
+    public boolean editStudent(int id, String fieldName, String newValue) {
+        String column = "";
+        String cast = "";
+        switch (fieldName) {
+            case "name": column = "name"; break;
+            case "dob":
+                column = "dob";
+                cast = "::date";
+                break;
+            case "email": column = "email"; break;
+            case "gender":
+                column = "gender";
+                cast = "::bit";
+                break;
+            case "phone": column = "phone"; break;
+            case "password": column = "password"; break;
+            default: return false;
         }
-        if (editPart.equals("dob")) {
-            query = "update student set dob=?::date where id=?";
-        }
-        if (editPart.equals("email")) {
-            query = "update student set email=? where id=?";
-        }
-        if (editPart.equals("gender")) {
-            query = "update student set gender=?::bit where id=?";
-        }
-        if (editPart.equals("phone")) {
-            query = "update student set phone=? where id=?";
-        }
-        if(editPart.equals("password")) {
-            query = "update student set password=? where id=?";
-        }
+        String query = "update student set " + column + " = ?" + cast +" where id = ?";
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
 
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);
-            prest.setString(1, editContent);
-            prest.setInt(2, id);
-            prest.executeUpdate();
+            ps.setString(1, newValue);
+            ps.setInt(2, id);
 
-            showByStudentID(id);
+            return ps.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            return false;
         }
     }
 
     @Override
     public List<Student> findStudent(String key, String searchBy) {
-        String query = new  String();
         List<Student> students = new ArrayList<>();
-        if (searchBy.equals("name")) {
-            query = "select * from student where name ilike ?";
+        String column = "";
+        if (searchBy.equalsIgnoreCase("name")) {
+            column = "name";
+        } else if (searchBy.equalsIgnoreCase("email")) {
+            column = "email";
+        } else {
+            // Nếu truyền lung tung -> Trả về rỗng hoặc báo lỗi luôn
+            System.err.println("❌ Tên cột tìm kiếm không hợp lệ!");
+            return students;
         }
-        if (searchBy.equals("email")) {
-            query = "select * from student where email ilike ?";
-        }
-
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);
+        String query ="select * from student where " + column +" ilike ?";
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement prest = conn.prepareStatement(query);) {
             String str = "%"+key+"%";
             prest.setString(1, str);
             ResultSet rs = prest.executeQuery();
             while (rs.next()) {
-                int id = rs.getInt("id");
-                String name = rs.getString("name");
-                Date date_of_birth = rs.getDate("dob");
-                String email = rs.getString("email");
-                Boolean gender = rs.getBoolean("gender");
-                String strGender = gender? "Nam" : "Nữ";
-                String phoneNumber = rs.getString("phone");
-                String password = rs.getString("password");
-                Date created_at = rs.getDate("created_at");
-
-                students.add(new Student(id, name, date_of_birth, email, strGender, phoneNumber, password, created_at));
+                students.add(StudentMapper.toStudent(rs));
             }
             return students;
         } catch (SQLException e) {
@@ -402,26 +349,14 @@ public class AdminDAOImpl implements IAdminDAO {
     }
 
     @Override
-    public List<Student> sortListStudent(List<Student> students, String sortBy) {
-        List<Student> studentList = listStudent();
-        if(sortBy.equals("name")) {
-            studentList.sort((s1, s2) -> s1.getName().compareTo(s2.getName()));
-        }
-        if(sortBy.equals("email")) {
-            studentList.sort((s1, s2) -> s1.getEmail().compareTo(s2.getEmail()));
-        }
-        return studentList;
-    }
-
-    @Override
-    public void deleteStudent(int id) {
+    public boolean deleteStudent(int id) {
         String query = "delete from student where id=?";
         try {
             Connection conn = DBConection.getConnection();
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setInt(1, id);
-            ps.executeUpdate();
-            System.out.println("Thành công!");
+            int change =  ps.executeUpdate();
+            return change > 0;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -495,7 +430,7 @@ public class AdminDAOImpl implements IAdminDAO {
             prest.setInt(1, id);
             ResultSet rs = prest.executeQuery();
             if (rs.next()) {
-                return util.StudentMapper.toStudent(rs);
+                return StudentMapper.toStudent(rs);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

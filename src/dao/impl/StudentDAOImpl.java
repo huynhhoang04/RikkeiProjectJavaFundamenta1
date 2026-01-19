@@ -7,6 +7,7 @@ import model.Student;
 import model.dto.EnrollmentDetailDTO;
 import uttil.CourseMapper;
 import uttil.DBConection;
+import uttil.StudentMapper;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class StudentDAOImpl implements IStudentDAO {
 
             ResultSet rs = prest.executeQuery();
             if (rs.next()) {
-                return util.StudentMapper.toStudent(rs);
+                return StudentMapper.toStudent(rs);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -154,7 +155,7 @@ public class StudentDAOImpl implements IStudentDAO {
     }
 
     @Override
-    public boolean cancerEnrollment(int enrollmentID) {
+    public boolean cancelEnrollment(int enrollmentID) {
         String query = "update enrollment set status = 'CANCER' where id = ?";
         try (Connection conn = DBConection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query);)
@@ -168,12 +169,11 @@ public class StudentDAOImpl implements IStudentDAO {
     }
 
     @Override
-    public boolean checkCheckCancerlation(int studentID, int enrollmentID) {
+    public boolean checkCheckCancelable(int studentID, int enrollmentID) {
         String query = "select * from enrollment where student_id = ? and id = ?";
         Enrollment foundEnrollment = null;
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement prest = conn.prepareStatement(query);) {
             prest.setInt(1, studentID);
             prest.setInt(2, enrollmentID);
             ResultSet rs = prest.executeQuery();
@@ -186,6 +186,8 @@ public class StudentDAOImpl implements IStudentDAO {
                 foundEnrollment = new Enrollment(id, student_id, course_id, registered_at, status);
             }
 
+            if(foundEnrollment == null) return false;
+
             if(foundEnrollment.getStatus().equals("WAITING")) {
                 return true;
             }
@@ -196,17 +198,14 @@ public class StudentDAOImpl implements IStudentDAO {
     }
 
     @Override
-    public void changePassword(int studentID, String password) {
+    public boolean changePassword(int studentID, String password) {
         String query = "update student set password = ? where id = ?";
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement prest = conn.prepareStatement(query);) {
             prest.setString(1, password);
             prest.setInt(2, studentID);
             int changed = prest.executeUpdate();
-            if(changed == 1) {
-                System.out.println("Thành công!");
-            }
+            return changed > 0;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -222,7 +221,7 @@ public class StudentDAOImpl implements IStudentDAO {
             prest.setInt(1, id);
             ResultSet rs = prest.executeQuery();
             if (rs.next()) {
-                foundStudent = util.StudentMapper.toStudent(rs);
+                foundStudent = StudentMapper.toStudent(rs);
             }
             if(foundStudent.getEmail().equals(email) && foundStudent.getPassword().equals(password)) {
                 return true;

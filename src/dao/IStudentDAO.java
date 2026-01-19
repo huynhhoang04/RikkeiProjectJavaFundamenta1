@@ -17,8 +17,8 @@ public interface IStudentDAO {
     boolean registerCourse(int studentID, int courseID);
 
     List<Enrollment>  listEnrollment(int studentID);
-    boolean cancerEnrollment(int id);
-    boolean checkCheckCancerlation(int studentID, int enrollmentID);
-    void changePassword(int studentID,  String password);
+    boolean cancelEnrollment(int id);
+    boolean checkCheckCancelable(int studentID, int enrollmentID);
+    boolean changePassword(int studentID,  String password);
     boolean verification(int id, String password, String email);
 }

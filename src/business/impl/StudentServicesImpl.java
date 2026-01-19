@@ -33,30 +33,8 @@ public class StudentServicesImpl implements IStudentServices {
     }
 
     @Override
-    public void findCourse() {
-        while(true){
-            try {
-                System.out.println("============================");
-                System.out.println("Nhập từ khóa : ");
-                String key = input.nextLine();
-                if(key.isBlank()){
-                    System.out.println("Không được bỏ trống! Vui lòng nhập lại : ");
-                    continue;
-                }
-                else{
-                    System.out.println("---------------------------------------------------------");
-                    List<Course> listCourse = dao.findCourse(key);
-                    for (Course course : listCourse) {
-                        System.out.println(course);
-                    }
-                    System.out.println("----------------------------------------------------------");
-                    break;
-                }
-            }
-            catch (Exception e){
-                e.printStackTrace();
-            }
-        }
+    public List<Course> findCourse(String key) {
+        return dao.findCourse(key);
     }
 
     @Override
@@ -93,65 +71,28 @@ public class StudentServicesImpl implements IStudentServices {
     }
 
     @Override
-    public void cancerEnrollment(int studentID) {
-         while (true){
-             try {
-                 System.out.println("============================");
-                 System.out.print("Nhập id phiếu đăng ký muốn hủy : ");
-                String strid = input.nextLine();
-                if(strid.isBlank()){
-                    System.out.println("Không được để trống!");
-                    continue;
-                }
-                if(!strid.matches("\\d+")){
-                    System.out.println("Id phải là số");
-                    continue;
-                }
-
-                int id = Integer.parseInt(strid);
-                if(!dao.checkCheckCancerlation(studentID, id)){
-                    System.out.println("Phiếu đăng ký không phải của bạn hoặc đã được xác nhận/hủy!");
-                    continue;
-                }
-                else {
-                    dao.cancerEnrollment(id);
-                    break;
-                }
-             }
-             catch (Exception e){
-                 e.printStackTrace();
-             }
-         }
+    public boolean cancelEnrollment(int studentID, int enrollmentID) {
+        boolean canCancel = dao.checkCheckCancelable(studentID, enrollmentID);
+        if (!canCancel) {
+            return false;
+        }
+        return dao.cancelEnrollment(enrollmentID);
     }
 
     @Override
-    public void changePassword(int studentID) {
-        while (true){
-            try {
-                System.out.println("============================");
-                System.out.println("Xác nhận email : ");
-                String email = input.nextLine();
-                System.out.println("Xác nhận mật khẩu cũ : ");
-                String oldpassword = input.nextLine();
-                System.out.println("Nhập mật khẩu mới : ");
-                String newpassword = input.nextLine();
-                if(oldpassword.equals(newpassword) && newpassword.isBlank() && email.isBlank()){
-                    System.out.println("Thông tin không được trống!");
-                    continue;
-                }
-                if(!dao.verification(studentID, oldpassword,email)){
-                    System.out.println("Xác thực thât bại!");
-                    continue;
-                }
-                else {
-                    dao.changePassword(studentID,newpassword);
-                    break;
-                }
-            }
-            catch (Exception e){
-                e.printStackTrace();
-            }
+    public boolean changePassword(int studentID, String email, String oldPass, String newPass) {
+        if (!dao.verification(studentID, oldPass, email)) {
+            return false; // Sai thông tin cũ -> Từ chối đổi
         }
+
+        // 2. Logic nghiệp vụ: Có thể check thêm (Mật khẩu mới không được trùng mật khẩu cũ)
+        if (oldPass.equals(newPass)) {
+            // Tùy ông, thường thì không cho trùng, nhưng ở đây tôi return false coi như lỗi logic
+            return false;
+        }
+
+        // 3. Gọi DAO thực hiện đổi
+        return dao.changePassword(studentID, newPass);
     }
 
 

@@ -1,12 +1,16 @@
 package presentation;
 
 import business.impl.AdminSevicesImpl;
+import dao.IAdminDAO;
+import dao.impl.AdminDAOImpl;
+import model.Admin;
 
 import java.util.Scanner;
 
 public class AdminLoginView {
     Scanner sc = new Scanner(System.in);
-    AdminSevicesImpl sevices = new AdminSevicesImpl();
+    IAdminDAO dao = new AdminDAOImpl();
+    AdminSevicesImpl sevices = new AdminSevicesImpl(dao);
     public void showAdminLogin(){
         menuChinh : while(true){
             try {
@@ -19,7 +23,9 @@ public class AdminLoginView {
                 if(name.isEmpty() || pass.isEmpty()){
                     System.out.println("Tên và mật khẩu không được để trống");
                 }
-                if(!sevices.authAdmin(name,pass)){
+
+                Admin admin = sevices.login(name,pass);
+                if(admin == null){
                     System.out.println("Sai tên hoặc mật khẩu");
                 }
                 else{

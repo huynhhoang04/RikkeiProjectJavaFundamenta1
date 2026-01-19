@@ -1,6 +1,7 @@
 package business.impl;
 
 import business.IAdminSevices;
+import dao.IAdminDAO;
 import model.Admin;
 import dao.impl.AdminDAOImpl;
 import model.Course;
@@ -9,10 +10,7 @@ import model.Student;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 import static uttil.checkPhoneValid.checkPhone;
 import static uttil.checkDOBValid.isValidDOB;
@@ -20,554 +18,165 @@ import static uttil.checkEmailValid.isValidEmail;
 
 public class AdminSevicesImpl implements IAdminSevices {
     Scanner input = new Scanner(System.in);
-    private final AdminDAOImpl dao = new AdminDAOImpl();
+    private final IAdminDAO dao;
+
+    public AdminSevicesImpl(IAdminDAO dao) {
+        this.dao = dao;
+    }
+
+
     //region: auth
     @Override
-    public boolean authAdmin(String username, String password) {
-        Admin login = dao.checkAdmin(username, password);
-        return login != null;
+    public Admin login(String username, String password) {
+        Admin admin = dao.checkAdmin(username, password);
+        return admin;
     }
     //endregion
 
     //region: coursemanagement
     @Override
-    public void showListCourse() {
-        System.out.println("--------------------------------------------------------------------------------------------------------------------------------------");
-        List<Course> listCourse = dao.listCourse();
-        for (Course course : listCourse) {
-            System.out.println(course);
-        }
-        System.out.println("--------------------------------------------------------------------------------------------------------------------------------------");
-        System.out.println("Nhấn phím bất kỳ để trờ về : ");
-        input.nextLine();
+    public List<Course> showListCourse() {
+        return dao.listCourse();
     }
 
     @Override
-    public void addCourse() {
-        while (true) {
-            System.out.println("================================");
-            System.out.print("Nhập tên khóa học : ");
-            String courseName = input.nextLine();
-            System.out.print("Nhập thời lượng : ");
-            String courseDuration = input.nextLine();
-            System.out.print("Nhập giảng viên :");
-            String courseInstructor = input.nextLine();
-            System.out.println("================================");
-
-            if (courseName.isBlank() || courseDuration.isBlank() || courseInstructor.isBlank()) {
-                System.out.println("Tất cả các thông tin  về khóa học không được để trống vui lòng nhập lại.");
-                continue;
-            }
-            if (!courseDuration.matches("\\d+")) {
-                System.out.println("Thời lượng phải là số vui lòng nhập lại");
-                continue;
-            }
-            int duration = Integer.parseInt(courseDuration);
-            if (duration <= 0) {
-                System.out.println("Thời lượng khóa học phải lớn 0");
-            } else {
-                dao.addCourse(courseName, duration, courseInstructor);
-                System.out.println("Nhập -1 để quay về , 1 để tiếp túc thêm hóa học :");
-                menuCon:
-                while (true) {
-                    switch (input.nextLine()) {
-                        case "1":
-                            break menuCon;
-                        case "-1":
-                            return;
-                        default:
-                            System.out.println("Lựa trọn Invalid, vui lòng chọn lại :");
-                    }
-                }
-            }
-        }
+    public boolean addCourse(String name, int duration, String instructor) {
+        if (duration <= 0) return false;
+        return dao.addCourse(name, duration, instructor);
     }
 
     @Override
-    public void editCourse() {
-        System.out.println("================================");
-        System.out.print("Nhập id khóa học để edit: ");
-        int id = Integer.parseInt(input.nextLine());
-        System.out.println("Nhập thành phần muốn sửa :");
-        System.out.println("1. Sửa tên khóa học");
-        System.out.println("2. Sửa thời lượng khóa học");
-        System.out.println("3. Sửa giảng viên");
-        System.out.println("4. Trở về");
-        System.out.println("================================");
-        while (true) {
-            System.out.print("Nhập lựa chọn : ");
-            switch (input.nextLine()) {
-                case "1":
-                    System.out.print("Nhập nội dung sửa đổi : ");
-                    while (true) {
-                        String name = input.nextLine();
-                        if (name.isBlank()) {
-                            System.out.print("Tất cả các thông tin  về khóa học không được để trống vui lòng nhập lại : ");
-                            continue;
-                        } else {
-                            dao.editCourse(id, "name", name);
-                            break;
-                        }
-                    }
-                    break;
-                case "2":
-                    System.out.print("Nhập nội dung sửa đổi : ");
-                    while (true) {
-                        String strDuration = input.nextLine();
-                        if (!strDuration.matches("\\d+")) {
-                            System.out.print("Thời lượng phải là số vui lòng nhập lại : ");
-                            continue;
-                        }
-                        int duration = Integer.parseInt(strDuration);
-                        if (duration <= 0) {
-                            System.out.print("Thời lượng khóa học phải lớn 0, vui lòng nhập lại : ");
-                            continue;
-                        } else {
-                            dao.editCourse(id, "duration", String.valueOf(duration));
-                            break;
-                        }
-                    }
-                    break;
-                case "3":
-                    System.out.print("Nhập nội dung sửa đổi : ");
-                    while (true) {
-                        String strInstructor = input.nextLine();
-                        if (strInstructor.isBlank()) {
-                            System.out.print("Tất cả các thông tin về khóa học không được để trống vui lòng nhập lại : ");
-                            continue;
-                        } else {
-                            dao.editCourse(id, "instructor", strInstructor);
-                            break;
-                        }
-                    }
-                    break;
-                case "4":
-                    return;
-                default:
-                    System.out.println("Lựa trọn Invalid");
-            }
-        }
+    public boolean updateCourseName(int id, String newName) {
+        return dao.updateCourseName(id, newName);
     }
 
     @Override
-    public void findCourseByKey() {
-        System.out.println("================================");
-        System.out.print("Nhập từ khóa tìm kiếm : ");
-        while (true) {
-            String key = input.nextLine();
-            if (key.isBlank()) {
-                System.out.print("Từ khóa tìm kiếm không được bỏ trống : ");
-                continue;
-            }
-            else {
-                System.out.println("--------------------------------------------------------------------------------------------------------------------------------------");
-                List<Course> findCourse = dao.findCourse(key);
-                for (Course course : findCourse) {
-                    System.out.println(course);
-                }
-                System.out.println("--------------------------------------------------------------------------------------------------------------------------------------");
-            }
-            System.out.println("Nhấn phím bất kỳ để trờ về : ");
-            input.nextLine();
-        }
+    public boolean updateCourseDuration(int id, int newDuration) {
+        return dao.updateCourseDuration(id, newDuration);
     }
 
     @Override
-    public void sortListCourse() {
-        List<Course> courses = dao.listCourse();
-        System.out.println("================================");
-        System.out.println("1. Sắp xếp theo tên khóa học");
-        System.out.println("2. Sắp xếp theo thời lượng khóa học");
-        System.out.println("3. Trở về");
-        System.out.println("================================");
-        while (true) {
-            System.out.print("Nhập lựa chọn : ");
-            switch (input.nextLine()) {
-                case "1":
-                    List<Course> sortedCoursebyName = dao.sortListCourse(courses, "name");
-                    System.out.println("--------------------------------------------------------------------------------------------------------------------------------------");
-                    for (Course course : sortedCoursebyName) {
-                        System.out.println(course);
-                    }
-                    System.out.println("--------------------------------------------------------------------------------------------------------------------------------------");
-                    System.out.println("Nhấn phím bất kỳ để trờ về : ");
-                    input.nextLine();
-                case "2":
-                    List<Course> sortedCoursebyDuration = dao.sortListCourse(courses, "duration");
-                    System.out.println("--------------------------------------------------------------------------------------------------------------------------------------");
-                    for (Course course : sortedCoursebyDuration) {
-                        System.out.println(course);
-                    }
-                    System.out.println("--------------------------------------------------------------------------------------------------------------------------------------");
-                    System.out.println("Nhấn phím bất kỳ để trờ về : ");
-                    input.nextLine();
-                case "3":
-                    return;
-                default:
-                    System.out.println("Lựa trọn Invalid, vui lòng chọn lại :");
-            }
-        }
+    public boolean updateCourseInstructor(int id, String newInstructor) {
+        return dao.updateCourseInstructor(id, newInstructor);
     }
 
     @Override
-    public void deleteCourse() {
-        while (true) {
-            System.out.print("Nhập id khóa : ");
-            String key = input.nextLine();
-            if (key.isBlank()) {
-                System.out.println("Không được trống!");
-                continue;
-            }
-            if(!key.matches("\\d+")) {
-                System.out.println("Phải là số!");
-                continue;
-            }
-            int id = Integer.parseInt(key);
-            if(!dao.checkCourse(id)){
-                System.out.println("id không tồn tại!");
-                continue;
-            }
-            if(dao.checkCourseHasStudent(id)){
-                System.out.println("Khóa học hiện đang có học viên!");
-                continue;
-            }
-            else{
-                dao.deleteCourse(id);
-                break;
-            }
+    public List<Course> findCourseByKey(String key) {
+        return dao.findCourse(key);
+    }
+
+    @Override
+    public List<Course> sortListCourse(String sortBy, String sortOrder) {
+        List<Course> list = dao.listCourse();
+
+        if (list.isEmpty()) {
+            return list;
         }
+
+        // 2. Tạo bộ so sánh (Comparator) tùy theo tiêu chí
+        Comparator<Course> comparator = null;
+
+        if (sortBy.equalsIgnoreCase("name")) {
+            // So sánh theo Tên (String)
+            comparator = (c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName());
+        } else if (sortBy.equalsIgnoreCase("duration")) {
+            // So sánh theo Thời lượng (Int)
+            // Dùng Integer.compare để an toàn hơn dấu trừ (-)
+            comparator = (c1, c2) -> Integer.compare(c1.getDuration(), c2.getDuration());
+        }
+
+        // 3. Xử lý chiều Tăng/Giảm
+        if (comparator != null) {
+            // Nếu chọn GIẢM DẦN (gd) thì đảo ngược bộ so sánh
+            if (sortOrder.equalsIgnoreCase("gd")) {
+                comparator = comparator.reversed();
+            }
+            // Bắt đầu sắp xếp
+            list.sort(comparator);
+        }
+
+        return list;
+    }
+
+    @Override
+    public boolean deleteCourse(int id) {
+        if (dao.checkCourseHasStudent(id)) {
+            return false;
+        }
+        return dao.deleteCourse(id);
     }
 
     //endregion
 
     //region: studentmanagement
     @Override
-    public void showListStudent() {
-        List<Student> students = dao.listStudent();
-        System.out.println("=================================");
-        for (Student student : students) {
-            System.out.println(student);
-        }
-        System.out.println("=================================");
-        System.out.println("Nhấn phím bất kỳ để trờ về : ");
-        input.nextLine();
+    public List<Student> showListStudent() {
+        return dao.listStudent();
     }
 
     @Override
-    public void addStudent() throws ParseException {
-        menuChinh: while (true) {
-            System.out.println("=================================");
-            System.out.print("Nhập tên học viên : ");
-            String name = input.nextLine();
-            System.out.print("Nhập ngày sinh : ");
-            String dob = input.nextLine();
-            System.out.println("Nhập email học viên : ");
-            String email = input.nextLine();
-            System.out.println("Chọn giới tính(Nam/Nữ) : ");
-            String strGender =  input.nextLine();
-            System.out.println("Nhập số điện thoại : ");
-            String phoneNumber = input.nextLine();
-            System.out.println("Nhập mật khẩu : ");
-            String password = input.nextLine();
-
-            if(name.isBlank() || dob.isBlank() || email.isBlank() || strGender.isBlank() || phoneNumber.isBlank() || password.isBlank()) {
-                System.out.println("Mọi thông tin không được để trống!");
-                continue ;
-            }
-
-            if(!isValidDOB(dob)){
-                System.out.println("Ngày sinh không hợp lệ hoặc sai định dạng!");
-                continue ;
-            }
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            Date birthDate = null;
-            try {
-                birthDate = sdf.parse(dob);
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            }
-
-            if(!isValidEmail(email)){
-                System.out.println("Email không hợp lệ hoặc sai định dạng!");
-                continue ;
-            }
-
-            if(dao.checkEmailExists(email)){
-                System.out.println("Email đã tồn tại");
-                continue ;
-            }
-
-            if(!strGender.equals("Nam") && !strGender.equals("Nữ")){
-                System.out.println("Giới tính không hợp lệ!");
-                continue ;
-            }
-
-            Boolean gender = strGender.equals("Nam");
-
-            if(!checkPhone(phoneNumber)){
-                System.out.println("Số điện thoại không hợp lệ!");
-                continue ;
-            }
-            dao.addStudent(name, birthDate, email, gender, phoneNumber, password);
-            menuCon : while (true) {
-                System.out.print("Nhập -1 để quay về , 1 để tiếp túc thêm hóa học : ");
-                switch (input.nextLine()) {
-                    case "1":
-                        break menuCon;
-                    case "-1":
-                        return;
-                    default:
-                        System.out.println("Lựa trọn Invalid");
-                }
-            }
-
+    public boolean addStudent(String name, Date dob, String email, boolean gender, String phone, String password)  {
+        if (dao.checkEmailExists(email)) {
+            return false; // Email trùng -> Báo thất bại
         }
+
+        return dao.addStudent(name, dob, email, gender, phone, password);
     }
 
     @Override
-    public void editStudent() throws ParseException {
-        System.out.println("================================");
-        System.out.print("Nhập id học viên để edit: ");
-        int id = Integer.parseInt(input.nextLine());
-        System.out.println("Nhập thành phần muốn sửa :");
-        System.out.println("1. Sửa tên học viên");
-        System.out.println("2. Sửa ngày sinh học viên");
-        System.out.println("3. Sửa email");
-        System.out.println("4. Sửa giới tính");
-        System.out.println("5. Sửa số điện thoại");
-        System.out.println("6. Sửa mật khẩu");
-        System.out.println("7. Trở về");
-        System.out.println("================================");
-        while (true) {
-            System.out.print("Nhập lựa chọn : ");
-            switch (input.nextLine()) {
-                case "1":
-                    System.out.print("Nhập nội dung sửa đổi : ");
-                    while (true) {
-                        String name = input.nextLine();
-                        if(name.isBlank()){
-                            System.out.print("Tất cả các thông tin về khóa học không được để trống vui lòng nhập lại : ");
-                            continue;
-                        }
-                        else{
-                            dao.editStudent(id, "name", name);
-                            break;
-                        }
-                    }
-                    break;
-                case "2":
-                    System.out.print("Nhập nội dung sửa đổi : ");
-                    while (true) {
-                        String dob = input.nextLine();
-                        if(dob.isBlank()){
-                            System.out.print("Tất cả các thông tin về khóa học không được để trống vui lòng nhập lại : ");
-                            continue;
-                        }
-                        if(!isValidDOB(dob)){
-                            System.out.println("Ngày sinh không hợp lệ hoặc sai định dạng!");
-                            continue ;
-                        }
-                        else{
-                            dao.editStudent(id, "dob", dob);
-                            break;
-                        }
-                    }
-                    break;
-                case "3":
-                    System.out.print("Nhập nội dung sửa đổi : ");
-                    while (true) {
-                        String email = input.nextLine();
-                        if(email.isBlank()){
-                            System.out.print("Tất cả các thông tin về khóa học không được để trống vui lòng nhập lại : ");
-                            continue;
-                        }
-                        if(!isValidEmail(email)){
-                            System.out.println("Email không hợp lệ hoặc sai định dạng!");
-                            continue ;
-                        }
-                        if(dao.checkEmailExists(email)){
-                            System.out.println("Email không hợp lệ hoặc sai định dạng!");
-                            continue ;
-                        }
-                        else {
-                            dao.editStudent(id, "email", email);
-                            break;
-                        }
-                    }
-                    break;
-                case "4":
-                    System.out.print("Nhập nội dung sửa đổi : ");
-                    while (true) {
-                        String gender = input.nextLine();
-                        if(gender.isBlank()){
-                            System.out.print("Tất cả các thông tin về khóa học không được để trống vui lòng nhập lại : ");
-                            continue;
-                        }
-                        if(!gender.equals("Nam")  && !gender.equals("Nữ")){
-                            System.out.println("Giới tính không hợp lệ!");
-                            continue ;
-                        }
-                        if(gender.equals("Nam")){
-                            dao.editStudent(id, "gender", "1");
-                            break;
-                        }
-                        else{
-                            dao.editStudent(id, "gender", "0");
-                            break;
-                        }
-                    }
-                    break;
-                case "5":
-                    System.out.print("Nhập nội dung sửa đổi : ");
-                    while (true) {
-                        String phoneNumber = input.nextLine();
-                        if(phoneNumber.isBlank()){
-                            System.out.print("Tất cả các thông tin về khóa học không được để trống vui lòng nhập lại : ");
-                            continue;
-                        }
-                        if(!checkPhone(phoneNumber)){
-                            System.out.println("Số điện thoại không hợp lệ!");
-                            continue ;
-                        }
-                        else {
-                            dao.editStudent(id, "phone", phoneNumber);
-                            break;
-                        }
-                    }
-                    break;
-                case "6":
-                    System.out.print("Nhập nội dung sửa đổi : ");
-                    while (true) {
-                        String password = input.nextLine();
-                        if(password.isBlank()){
-                            System.out.print("Tất cả các thông tin về khóa học không được để trống vui lòng nhập lại : ");
-                            continue;
-                        }
-                        else {
-                            dao.editStudent(id, "password", password);
-                            break;
-                        }
-                    }
-                    break;
-                case "7":
-                    return;
-                default:
-                    System.out.println("Lựa trọn Invalid");
-            }
-        }
+    public boolean editStudent(int id, String fieldName, String newValue)  {
+        return dao.editStudent(id, fieldName, newValue);
     }
 
     @Override
-    public void findStudent() {
-        System.out.println("================================");
-        System.out.println("1. Tìm theo tên");
-        System.out.println("2. Tìm theo email");
-        System.out.println("3. Trở về");
-        System.out.println("================================");
-        while (true) {
-            System.out.println("Nhập lựa chọn : ");
-            String key = new String();
-            switch (input.nextLine()) {
-                case "1":
-                    key = input.nextLine();
-                    if(key.isBlank()){
-                        System.out.print("Từ khóa tìm kiếm không được bỏ trống : ");
-                        continue;
-                    }
-                    else {
-                        System.out.println("--------------------------------------------------------------------------------------------------------------------------------------");
-                        List<Student> students = dao.findStudent(key, "name");
-                        for (Student student : students) {
-                            System.out.println(student);
-                        }
-                        System.out.println("--------------------------------------------------------------------------------------------------------------------------------------");
-                        break;
-                    }
-                case "2":
-                    key = input.nextLine();
-                    if(key.isBlank()){
-                        System.out.print("Từ khóa tìm kiếm không được bỏ trống : ");
-                        continue;
-                    }
-                    else {
-                        System.out.println("--------------------------------------------------------------------------------------------------------------------------------------");
-                        List<Student> students = dao.findStudent(key, "email");
-                        for (Student student : students) {
-                            System.out.println(student);
-                        }
-                        System.out.println("--------------------------------------------------------------------------------------------------------------------------------------");
-                        break;
-                    }
-                case "3":
-                    return;
-                default:
-                    System.out.println("Lựa trọn Invalid");
-            }
-        }
-
+    public List<Student> findStudent(String key, String searchBy) {
+        return dao.findStudent(key, searchBy);
     }
 
     @Override
-    public void sortListStudent() {
-        List<Student> students = dao.listStudent();
-        System.out.println("================================");
-        System.out.println("1. Sắp xếp theo tên");
-        System.out.println("2. Sắp xếp theo email");
-        System.out.println("3. Trở về");
-        System.out.println("================================");
-         while (true) {
-             System.out.print("Nhập lựa chọn : ");
-             switch (input.nextLine()) {
-                 case "1":
-                     List<Student> students1 = dao.sortListStudent(students,  "name");
-                     System.out.println("================================");
-                     for (Student student : students1) {
-                         System.out.println(student);
-                     }
-                     System.out.println("================================");
-                     break;
-                 case "2":
-                     List<Student> students2 = dao.sortListStudent(students,  "email");
-                     System.out.println("=================================");
-                     for (Student student : students2) {
-                         System.out.println(student);
-                     }
-                     System.out.println("===============================");
-                     break;
-                 case "3":
-                    return;
-                 default:
-                     System.out.println("Lựa trọn Invalid, vui lòng chọn lại :");
-             }
-         }
+    public List<Student> sortListStudent(String sortBy, String sortOrder) {
+        List<Student> list = dao.listStudent(); //
+
+        // Nếu list rỗng thì trả về luôn
+        if (list.isEmpty()) {
+            return list;
+        }
+
+        // 2. Tạo bộ so sánh (Comparator) tùy theo tiêu chí (Tên hay Email)
+        Comparator<Student> comparator = null;
+
+        if (sortBy.equalsIgnoreCase("name")) {
+            // So sánh theo TÊN (Bỏ qua hoa thường)
+            comparator = (s1, s2) -> s1.getName().compareToIgnoreCase(s2.getName());
+
+        } else if (sortBy.equalsIgnoreCase("email")) {
+            // So sánh theo EMAIL
+            comparator = (s1, s2) -> s1.getEmail().compareToIgnoreCase(s2.getEmail());
+        }
+
+        // 3. Xử lý chiều Tăng/Giảm
+        if (comparator != null) {
+            // Nếu user chọn GIẢM DẦN ("gd") thì đảo ngược bộ so sánh
+            if (sortOrder.equalsIgnoreCase("gd")) {
+                comparator = comparator.reversed();
+            }
+
+            // Bắt đầu sắp xếp
+            list.sort(comparator);
+        }
+
+        return list;
     }
 
     @Override
-    public void deleteStudent() {
-        while (true) {
-            System.out.print("Nhập id khóa : ");
-            String strid = input.nextLine();
-            if (strid.isBlank()) {
-                System.out.println("Không được trống!");
-                continue;
-            }
-            if (!strid.matches("\\d+")) {
-                System.out.println("Phải là số!");
-                continue;
-            }
-            int id = Integer.parseInt(strid);
-            if (!dao.checkStudentExists(id)) {
-                System.out.println("Học viên không tồn tại!");
-                continue;
-            }
-            if (dao.checkStudentAttend(id)) {
-                System.out.println("Học viên đã đăng ký khóa học không xóa được!");
-                continue;
-            } else {
-                dao.deleteStudent(id);
-                break;
-            }
+    public boolean deleteStudent(int id) {
+        if (!dao.checkStudentExists(id)) {
+            return false;
         }
+        if (dao.checkStudentAttend(id)) {
+            return false;
+        }
+        return dao.deleteStudent(id);
     }
 
 
