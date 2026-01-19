@@ -1,12 +1,15 @@
 package presentation.student;
 
 import business.impl.StudentServicesImpl;
+import dao.IStudentDAO;
+import dao.impl.StudentDAOImpl;
 
 import java.util.Scanner;
 
 public class ReviewCourseMenu {
     Scanner sc = new Scanner(System.in);
-    StudentServicesImpl services = new StudentServicesImpl();
+    IStudentDAO dao = new StudentDAOImpl();
+    StudentServicesImpl services = new StudentServicesImpl(dao);
 
     public void showMenu(){
         menuChinh : while(true){

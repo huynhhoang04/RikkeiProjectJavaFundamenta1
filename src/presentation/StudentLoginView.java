@@ -8,8 +8,8 @@ import java.util.Scanner;
 
 public class StudentLoginView {
     Scanner sc = new Scanner(System.in);
-    StudentServicesImpl services = new StudentServicesImpl();
     StudentDAOImpl dao = new StudentDAOImpl();
+    StudentServicesImpl services = new StudentServicesImpl(dao);
     public void showStudentLogin(){
         while (true){
             try{
@@ -22,11 +22,13 @@ public class StudentLoginView {
                 if(email.isEmpty() || pass.isEmpty()){
                     System.out.println("Email và mật khẩu không được để trống");
                 }
-                if(!services.authStudent(email, pass)){
-                    System.out.println("Sai tên hoặc mật khẩu");
+
+                Student student = services.login(email,pass);
+                if(student == null){
+                    System.out.println("Sai email hoặc mật khẩu!");
                 }
                 else{
-                    Student student = dao.checkStudent(email, pass);
+                    System.out.println("Đăng nhập thành công!Id : " + student.getId());
                     StudentMenuView studentMenuView = new StudentMenuView();
                     boolean logout = studentMenuView.showStudentMenu(student.getId());
                     if(logout){

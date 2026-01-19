@@ -495,15 +495,7 @@ public class AdminDAOImpl implements IAdminDAO {
             prest.setInt(1, id);
             ResultSet rs = prest.executeQuery();
             if (rs.next()) {
-                int student_id = rs.getInt("id");
-                String name = rs.getString("name");
-                Date date_of_birth = rs.getDate("dob");
-                String email = rs.getString("email");
-                Boolean gender = rs.getBoolean("gender");
-                String strGender = gender? "Nam" : "Nữ";
-                String phoneNumber = rs.getString("phone");
-
-                return new Student(student_id, name, email, date_of_birth, strGender, phoneNumber);
+                return util.StudentMapper.toStudent(rs);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

@@ -3,6 +3,7 @@ package dao;
 import model.Course;
 import model.Enrollment;
 import model.Student;
+import model.dto.EnrollmentDetailDTO;
 
 import java.util.List;
 
@@ -11,13 +12,12 @@ public interface IStudentDAO {
 
     List<Course> listCourses();
     List<Course> findCourse(String key);
-    void showEnrolment(int id);
+    List<EnrollmentDetailDTO> getHistory(int Id);
     boolean checkCourseExist(int id);
-    void registerCourse(int studentID, int courseID);
+    boolean registerCourse(int studentID, int courseID);
 
     List<Enrollment>  listEnrollment(int studentID);
-    List<Enrollment> sortEnrollment(int studentID, String sortBy,  String sortOrder);
-    void cancerEnrollment(int id);
+    boolean cancerEnrollment(int id);
     boolean checkCheckCancerlation(int studentID, int enrollmentID);
     void changePassword(int studentID,  String password);
     boolean verification(int id, String password, String email);

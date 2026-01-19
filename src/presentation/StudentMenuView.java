@@ -1,6 +1,8 @@
 package presentation;
 
 import business.impl.StudentServicesImpl;
+import dao.IStudentDAO;
+import dao.impl.StudentDAOImpl;
 import presentation.student.RegisteredMenu;
 import presentation.student.ReviewCourseMenu;
 
@@ -8,9 +10,10 @@ import java.util.Scanner;
 
 public class StudentMenuView {
     Scanner sc = new Scanner(System.in);
+    IStudentDAO dao = new StudentDAOImpl();
     ReviewCourseMenu rcm = new ReviewCourseMenu();
     RegisteredMenu rm = new RegisteredMenu();
-    StudentServicesImpl services = new StudentServicesImpl();
+    StudentServicesImpl services = new StudentServicesImpl(dao);
     public boolean showStudentMenu(int id){
         while (true){
             System.out.println("===========Menu Học Viên========");
@@ -28,7 +31,7 @@ public class StudentMenuView {
                     rcm.showMenu();
                     break;
                 case 2:
-                    services.registerCourse(id);
+                    handleRegisterCourse(id);
                     break;
                 case 3:
                     rm.showMenu(id);
@@ -43,6 +46,34 @@ public class StudentMenuView {
                     return true;
                 default:
                     System.out.println("Lựa trọn Invalid");
+            }
+        }
+    }
+
+    public void handleRegisterCourse(int studentId) {
+
+        while (true) {
+            System.out.println("========================================");
+            System.out.print("Nhập ID khóa học muốn đăng ký (hoặc 0 để thoát): ");
+
+            int courseId = 0;
+            try {
+                String input = sc.nextLine().trim();
+                if (input.isEmpty()) continue;
+                courseId = Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                System.err.println("❌ Lỗi: Vui lòng nhập số nguyên!");
+                continue;
+            }
+
+            if (courseId == 0) break;
+            boolean isSuccess = services.registerCourse(studentId, courseId);
+
+            if (isSuccess) {
+                System.out.println("✅ Đăng ký khóa học thành công!");
+                break;
+            } else {
+                System.err.println("❌ Đăng ký thất bại! (Khóa học không tồn tại hoặc đã đăng ký rồi)");
             }
         }
     }
