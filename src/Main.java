@@ -15,17 +15,15 @@ public class Main {
             System.out.println("3.Exit");
             System.out.println("================================");
             System.out.print("Nhập lựa trọn : ");
-            int in = sc.nextInt();
-
-            switch (in) {
-                case 1:
+            switch (sc.nextLine()) {
+                case "1":
                     adminLogin.showAdminLogin();
                     break;
-                case 2:
+                case "2":
                     studentLogin.showStudentLogin();
                     break;
-                case 3:
-                    System.exit(0);
+                case "3":
+                    System.exit(36);
                 default:
                     System.out.println("Lựa chọn Invalid ");
             }

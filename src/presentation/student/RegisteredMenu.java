@@ -74,10 +74,10 @@ public class RegisteredMenu {
             String sortDir = "";
 
             switch (choice) {
-                case "1": sortBy = "name"; sortDir = "td"; break;
-                case "2": sortBy = "name"; sortDir = "gd"; break;
-                case "3": sortBy = "time"; sortDir = "gd"; break; // Mới nhất là giảm dần
-                case "4": sortBy = "time"; sortDir = "td"; break;
+                case "1": sortBy = "name"; sortDir = "asc"; break;
+                case "2": sortBy = "name"; sortDir = "desc"; break;
+                case "3": sortBy = "time"; sortDir = "asc"; break;
+                case "4": sortBy = "time"; sortDir = "desc"; break;
                 case "0": return;
                 default: System.out.println("❌ Chọn sai!"); continue;
             }

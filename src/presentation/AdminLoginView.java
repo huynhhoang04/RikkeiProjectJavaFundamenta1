@@ -12,18 +12,17 @@ public class AdminLoginView {
     IAdminDAO dao = new AdminDAOImpl();
     AdminSevicesImpl sevices = new AdminSevicesImpl(dao);
     public void showAdminLogin(){
-        menuChinh : while(true){
+        while(true){
             try {
-                System.out.print("Enter UserName :");
+                System.out.print("Enter UserName(exit để trở về) :");
                 String name = sc.nextLine().trim();
-
-                System.out.print("Enter Password :");
+                System.out.print("Enter Password(exit để trở về) :");
                 String pass = sc.nextLine().trim();
-
+                if(name.equals("exit")) return;
+                if(pass.equals("exit")) return;
                 if(name.isEmpty() || pass.isEmpty()){
-                    System.out.println("Tên và mật khẩu không được để trống");
+                    System.out.println("Tên và mật khẩu không được để trống. Vui lòng nập lại!");
                 }
-
                 Admin admin = sevices.login(name,pass);
                 if(admin == null){
                     System.out.println("Sai tên hoặc mật khẩu");
@@ -38,6 +37,7 @@ public class AdminLoginView {
                 }
             }
             catch (Exception e){
+                System.err.println(e.getMessage());
                 e.printStackTrace();
             }
         }

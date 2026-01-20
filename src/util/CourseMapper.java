@@ -1,4 +1,4 @@
-package uttil;
+package util;
 
 import model.Course;
 

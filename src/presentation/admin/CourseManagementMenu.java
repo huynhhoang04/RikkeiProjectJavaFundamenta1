@@ -5,14 +5,8 @@ import dao.IAdminDAO;
 import dao.impl.AdminDAOImpl;
 import model.Course;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
-
-import static uttil.checkDOBValid.isValidDOB;
-import static uttil.checkEmailValid.isValidEmail;
-import static uttil.checkPhoneValid.checkPhone;
 
 public class CourseManagementMenu {
     Scanner sc = new Scanner(System.in);
@@ -201,16 +195,16 @@ public class CourseManagementMenu {
 
             switch (choice) {
                 case "1":
-                    sortBy = "name"; sortOrder = "td"; // Tăng dần
+                    sortBy = "name"; sortOrder = "asc"; // Tăng dần
                     break;
                 case "2":
-                    sortBy = "name"; sortOrder = "gd"; // Giảm dần
+                    sortBy = "name"; sortOrder = "desc"; // Giảm dần
                     break;
                 case "3":
-                    sortBy = "duration"; sortOrder = "td"; // Tăng dần
+                    sortBy = "duration"; sortOrder = "asc"; // Tăng dần
                     break;
                 case "4":
-                    sortBy = "duration"; sortOrder = "gd"; // Giảm dần
+                    sortBy = "duration"; sortOrder = "desc"; // Giảm dần
                     break;
                 default:
                     System.out.println("❌ Lựa chọn không hợp lệ!");

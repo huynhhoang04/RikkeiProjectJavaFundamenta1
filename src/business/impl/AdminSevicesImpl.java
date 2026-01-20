@@ -3,39 +3,26 @@ package business.impl;
 import business.IAdminSevices;
 import dao.IAdminDAO;
 import model.Admin;
-import dao.impl.AdminDAOImpl;
 import model.Course;
-import model.Enrollment;
 import model.Student;
 import model.dto.EnrollmentDetailDTO;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static uttil.checkPhoneValid.checkPhone;
-import static uttil.checkDOBValid.isValidDOB;
-import static uttil.checkEmailValid.isValidEmail;
-
 public class AdminSevicesImpl implements IAdminSevices {
-    Scanner input = new Scanner(System.in);
     private final IAdminDAO dao;
 
     public AdminSevicesImpl(IAdminDAO dao) {
         this.dao = dao;
     }
 
-
-    //region: auth
     @Override
     public Admin login(String username, String password) {
         Admin admin = dao.checkAdmin(username, password);
         return admin;
     }
-    //endregion
 
-    //region: coursemanagement
     @Override
     public List<Course> showListCourse() {
         return dao.listCourse();
@@ -70,33 +57,21 @@ public class AdminSevicesImpl implements IAdminSevices {
     @Override
     public List<Course> sortListCourse(String sortBy, String sortOrder) {
         List<Course> list = dao.listCourse();
-
         if (list.isEmpty()) {
             return list;
         }
-
-        // 2. Tạo bộ so sánh (Comparator) tùy theo tiêu chí
         Comparator<Course> comparator = null;
-
         if (sortBy.equalsIgnoreCase("name")) {
-            // So sánh theo Tên (String)
             comparator = (c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName());
         } else if (sortBy.equalsIgnoreCase("duration")) {
-            // So sánh theo Thời lượng (Int)
-            // Dùng Integer.compare để an toàn hơn dấu trừ (-)
             comparator = (c1, c2) -> Integer.compare(c1.getDuration(), c2.getDuration());
         }
-
-        // 3. Xử lý chiều Tăng/Giảm
         if (comparator != null) {
-            // Nếu chọn GIẢM DẦN (gd) thì đảo ngược bộ so sánh
-            if (sortOrder.equalsIgnoreCase("gd")) {
+            if (sortOrder.equalsIgnoreCase("desc")) {
                 comparator = comparator.reversed();
             }
-            // Bắt đầu sắp xếp
             list.sort(comparator);
         }
-
         return list;
     }
 
@@ -108,9 +83,6 @@ public class AdminSevicesImpl implements IAdminSevices {
         return dao.deleteCourse(id);
     }
 
-    //endregion
-
-    //region: studentmanagement
     @Override
     public List<Student> showListStudent() {
         return dao.listStudent();
@@ -119,7 +91,7 @@ public class AdminSevicesImpl implements IAdminSevices {
     @Override
     public boolean addStudent(String name, Date dob, String email, boolean gender, String phone, String password)  {
         if (dao.checkEmailExists(email)) {
-            return false; // Email trùng -> Báo thất bại
+            return false;
         }
 
         return dao.addStudent(name, dob, email, gender, phone, password);
@@ -137,36 +109,23 @@ public class AdminSevicesImpl implements IAdminSevices {
 
     @Override
     public List<Student> sortListStudent(String sortBy, String sortOrder) {
-        List<Student> list = dao.listStudent(); //
-
-        // Nếu list rỗng thì trả về luôn
+        List<Student> list = dao.listStudent();
         if (list.isEmpty()) {
             return list;
         }
-
-        // 2. Tạo bộ so sánh (Comparator) tùy theo tiêu chí (Tên hay Email)
         Comparator<Student> comparator = null;
-
         if (sortBy.equalsIgnoreCase("name")) {
-            // So sánh theo TÊN (Bỏ qua hoa thường)
             comparator = (s1, s2) -> s1.getName().compareToIgnoreCase(s2.getName());
 
         } else if (sortBy.equalsIgnoreCase("email")) {
-            // So sánh theo EMAIL
             comparator = (s1, s2) -> s1.getEmail().compareToIgnoreCase(s2.getEmail());
         }
-
-        // 3. Xử lý chiều Tăng/Giảm
         if (comparator != null) {
-            // Nếu user chọn GIẢM DẦN ("gd") thì đảo ngược bộ so sánh
-            if (sortOrder.equalsIgnoreCase("gd")) {
+            if (sortOrder.equalsIgnoreCase("desc")) {
                 comparator = comparator.reversed();
             }
-
-            // Bắt đầu sắp xếp
             list.sort(comparator);
         }
-
         return list;
     }
 
@@ -181,10 +140,6 @@ public class AdminSevicesImpl implements IAdminSevices {
         return dao.deleteStudent(id);
     }
 
-
-    //endregion
-
-    //region Enrollment
     @Override
     public List<EnrollmentDetailDTO> getCourseEnrollments(int courseId) {
         if(!dao.checkCourse(courseId)){
@@ -216,10 +171,6 @@ public class AdminSevicesImpl implements IAdminSevices {
         return dao.deleteEnrollment(enrollmentId);
     }
 
-
-    //endregion
-
-    //region analyze
     @Override
     public Map<String, Integer> showTotalCoursesAndStudents() {
         return dao.totalCourseAndStudent();
@@ -233,7 +184,6 @@ public class AdminSevicesImpl implements IAdminSevices {
     @Override
     public Map<String, Integer> Top5CourseWithStudents() {
         Map<String, Integer> data = dao.analyzeTotalStudentByCourse();
-
         return data.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .limit(5)
@@ -243,13 +193,10 @@ public class AdminSevicesImpl implements IAdminSevices {
     @Override
     public Map<String, Integer> CourseWithMoreThan10Students() {
         Map<String, Integer> data = dao.analyzeTotalStudentByCourse();
-
         return data.entrySet().stream()
                 .filter(e -> e.getValue() >= 10)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,(e1, e2) -> e2, LinkedHashMap::new));
     }
-
-    //endregion
 }
 
 

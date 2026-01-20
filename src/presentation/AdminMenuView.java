@@ -15,7 +15,7 @@ public class AdminMenuView {
     EnrollmentManagementMenu em = new EnrollmentManagementMenu();
     AnalyzeMenu am = new AnalyzeMenu();
     public boolean showAdminMenu(){
-        menuChinh : while (true){
+        while (true){
             System.out.println("============Menu Admin==========");
             System.out.println("1. Quản lý khóa học");
             System.out.println("2. Quản lý học viên");
@@ -24,21 +24,20 @@ public class AdminMenuView {
             System.out.println("5. Đăng xuất");
             System.out.println("================================");
             System.out.print("Nhập lựa trọn : ");
-            int choice = sc.nextInt();
-            switch (choice){
-                case 1:
+            switch (sc.nextLine()){
+                case "1":
                     cm.showMenu();
                     break;
-                case 2:
+                case "2":
                     sm.showMenu();
                     break;
-                case 3:
+                case "3":
                     em.showMenu();
                     break;
-                case 4:
+                case "4":
                     am.showMenu();
                     break ;
-                case 5:
+                case "5":
                     return true;
                 default:
                     System.out.println("Lựa trọn Invalid");

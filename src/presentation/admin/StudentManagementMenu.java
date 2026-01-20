@@ -10,9 +10,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
-import static uttil.checkDOBValid.isValidDOB;
-import static uttil.checkEmailValid.isValidEmail;
-import static uttil.checkPhoneValid.checkPhone;
+import static util.checkDOBValid.isValidDOB;
+import static util.checkEmailValid.isValidEmail;
+import static util.checkPhoneValid.checkPhone;
 
 public class StudentManagementMenu {
     Scanner sc = new Scanner(System.in);
@@ -255,16 +255,16 @@ public class StudentManagementMenu {
 
             switch (choice) {
                 case "1":
-                    sortBy = "name"; sortOrder = "td"; // Tên tăng
+                    sortBy = "name"; sortOrder = "asc"; // Tên tăng
                     break;
                 case "2":
-                    sortBy = "name"; sortOrder = "gd"; // Tên giảm
+                    sortBy = "name"; sortOrder = "desc"; // Tên giảm
                     break;
                 case "3":
-                    sortBy = "email"; sortOrder = "td"; // Email tăng
+                    sortBy = "email"; sortOrder = "asc"; // Email tăng
                     break;
                 case "4":
-                    sortBy = "email"; sortOrder = "gd"; // Email giảm
+                    sortBy = "email"; sortOrder = "desc"; // Email giảm
                     break;
                 default:
                     System.out.println("❌ Lựa chọn không hợp lệ!");

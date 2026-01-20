@@ -2,7 +2,6 @@ package dao;
 
 import model.Admin;
 import model.Course;
-import model.Enrollment;
 import model.Student;
 import model.dto.EnrollmentDetailDTO;
 
@@ -11,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 public interface IAdminDAO {
-    void showByStudentID(int id);
 
     Admin checkAdmin(String username, String password);
 
@@ -25,7 +23,7 @@ public interface IAdminDAO {
     List<Course> findCourse(String key);
     boolean checkCourse(int id);
     boolean deleteCourse(int id);
-    boolean checkCourseHasStudent(int courseId);
+    boolean checkCourseHasStudent(int id);
 
     List<Student>  listStudent();
     boolean addStudent(String name, Date dob, String email, Boolean gender, String phone, String password);

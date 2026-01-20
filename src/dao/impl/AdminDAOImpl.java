@@ -3,161 +3,126 @@ package dao.impl;
 import dao.IAdminDAO;
 import model.Admin;
 import model.Course;
-import model.Enrollment;
 import model.Student;
 import model.dto.EnrollmentDetailDTO;
-import uttil.CourseMapper;
-import uttil.DBConection;
-import uttil.StudentMapper;
+import util.CourseMapper;
+import util.DBConection;
+import util.StudentMapper;
 
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
 
 public class AdminDAOImpl implements IAdminDAO {
+
+
     @Override
-    public void showByStudentID(int id) {
-        String sql = "select * from student where id = ?";
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(sql);
-            prest.setInt(1, id);
+    public Admin checkAdmin(String InputUsername, String InputPassword) {
+        String query = "SELECT id, username, password FROM admin WHERE username=? AND password=?";
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement prest = conn.prepareStatement(query)) {
+            prest.setString(1, InputUsername);
+            prest.setString(2, InputPassword);
             ResultSet rs = prest.executeQuery();
             if (rs.next()) {
-                int student_id = rs.getInt("id");
-                String student_name = rs.getString("name");
-                Date student_dob = rs.getDate("dob");
-                String student_email = rs.getString("email");
-                Boolean student_gender = rs.getBoolean("gender");
-                String strGender = student_gender? "Nam" : "Nữ";
-                String student_phone = rs.getString("phone");
-                String student_password = rs.getString("password");
-                Date student_created_at = rs.getDate("created_at");
-
-                System.out.println("Thêm học viên thành công!");
-                System.out.println(new Student(student_id, student_name, student_dob, student_email, strGender, student_phone, student_password, student_created_at));
+                int id = rs.getInt("id");
+                String OutputUsername = rs.getString("username");
+                String OutputPassword = rs.getString("password");
+                return new Admin(id, OutputUsername, OutputPassword);
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    //region auth
-    @Override
-    public Admin checkAdmin(String username, String password) {
-        String query = "select * from admin where username=? and password=?";
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);
-
-            prest.setString(1, username);
-            prest.setString(2, password);
-
-            ResultSet rs = prest.executeQuery();
-            if (rs.next()) {
-                String reusername = rs.getString("username");
-                int reid = rs.getInt("id");
-                String repassword = rs.getString("password");
-
-                return new Admin(reid, reusername,  repassword);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
         return null;
     }
-    //endregion
 
-    //region : courseDAO
     @Override
     public List<Course> listCourse() {
-        String query = "select * from course";
+        String query = "SELECT * FROM course";
+        List<Course> courses = new ArrayList<>();
         try (Connection conn = DBConection.getConnection();
-             PreparedStatement prest = conn.prepareStatement(query);) {
+             PreparedStatement prest = conn.prepareStatement(query)) {
             ResultSet rs = prest.executeQuery();
-            List<Course> courses = new ArrayList<>();
             while (rs.next()) {
                 courses.add(CourseMapper.toCourse(rs));
             }
             return courses;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
+        return null;
     }
 
     @Override
-    public boolean addCourse(String name, int duration,  String instructor) {
-        String query = "insert into course(name, duration, instructor) values(?,?,?)";
+    public boolean addCourse(String InputName, int InputDuration,  String InputInstructor) {
+        String query = "INSERT INTO course(name, duration, instructor) VALUES (?,?,?)";
         try (Connection conn = DBConection.getConnection();
-             PreparedStatement prest = conn.prepareStatement(query);) {
-
-            prest.setString(1, name);
-            prest.setInt(2, duration);
-            prest.setString(3, instructor);
-
+             PreparedStatement prest = conn.prepareStatement(query)) {
+            prest.setString(1, InputName);
+            prest.setInt(2, InputDuration);
+            prest.setString(3, InputInstructor);
             int change =  prest.executeUpdate();
             return change > 0;
-
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
+        return false;
     }
 
-    // 1. Hàm sửa Tên (Nhận String)
     @Override
-    public boolean updateCourseName(int id, String newName) {
+    public boolean updateCourseName(int courseId, String newName) {
         String query = "UPDATE course SET name = ? WHERE id = ?";
         try (Connection conn = DBConection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
-
             ps.setString(1, newName);
-            ps.setInt(2, id);
-            return ps.executeUpdate() > 0; // Trả về true nếu update thành công
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    // 2. Hàm sửa Thời gian (Nhận INT -> Chuẩn kiểu dữ liệu)
-    @Override
-    public boolean updateCourseDuration(int id, int newDuration) {
-        String query = "UPDATE course SET duration = ? WHERE id = ?"; // Không cần ::int nữa
-        try (Connection conn = DBConection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
-
-            ps.setInt(1, newDuration); // Dùng setInt chuẩn chỉ
-            ps.setInt(2, id);
+            ps.setInt(2, courseId);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
+            System.err.println(e.getMessage());
             e.printStackTrace();
-            return false;
         }
+        return false;
     }
 
-    // 3. Hàm sửa Giảng viên (Nhận String)
     @Override
-    public boolean updateCourseInstructor(int id, String newInstructor) {
+    public boolean updateCourseDuration(int courseid, int newDuration) {
+        String query = "UPDATE course SET duration = ? WHERE id = ?";
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, newDuration);
+            ps.setInt(2, courseid);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean updateCourseInstructor(int courseid, String newInstructor) {
         String query = "UPDATE course SET instructor = ? WHERE id = ?";
         try (Connection conn = DBConection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
-
             ps.setString(1, newInstructor);
-            ps.setInt(2, id);
+            ps.setInt(2, courseid);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
+            System.err.println(e.getMessage());
             e.printStackTrace();
-            return false;
         }
+        return false;
     }
 
     @Override
     public List<Course> findCourse(String key) {
-        String query = "select * from course where name ilike ?";
+        String query = "SELECT * FROM course WHERE name ilike ?";
         List<Course> courses = new ArrayList<>();
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement prest = conn.prepareStatement(query)) {
             String searchformat = "%" + key + "%";
             prest.setString(1, searchformat);
             ResultSet rs = prest.executeQuery();
@@ -167,75 +132,72 @@ public class AdminDAOImpl implements IAdminDAO {
                 int duration = rs.getInt("duration");
                 String instructor = rs.getString("instructor");
                 Date created_at = rs.getDate("created_at");
-
                 courses.add(new Course(id, name, duration, instructor, created_at));
             }
-
             return courses;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
+        return null;
     }
 
     @Override
-    public boolean checkCourse(int id) {
-        String query = "select count(*) from course where id=?";
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);
-            prest.setInt(1, id);
+    public boolean checkCourse(int courseId) {
+        String query = "SELECT count(*) FROM course WHERE id=?";
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement prest = conn.prepareStatement(query)) {
+            prest.setInt(1, courseId);
             ResultSet rs = prest.executeQuery();
             if (rs.next()) {
                 int count = rs.getInt(1);
                 return count > 0;
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
         return false;
     }
 
     @Override
-    public boolean deleteCourse(int id) {
-        String query = "delete from course where id=?";
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(query);
-            ps.setInt(1, id);
+    public boolean deleteCourse(int courseId) {
+        String query = "DELETE FROM course WHERE id=?";
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, courseId);
             int change = ps.executeUpdate();
             return change > 0;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
+        return false;
     }
 
     @Override
     public boolean checkCourseHasStudent(int courseId) {
-        String query = "SELECT COUNT(*) FROM enrollment WHERE course_id = ?";
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(query);
+        String query = "SELECT count(*) FROM enrollment WHERE course_id = ?";
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, courseId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return rs.getInt(1) > 0;
             }
         } catch (Exception e) {
+            System.err.println(e.getMessage());
             e.printStackTrace();
         }
         return false;
     }
 
-
-    //endregion
-
-    //region: studentDAO
     @Override
     public List<Student> listStudent() {
-        String query = "select * from student";
+        String query = "SELECT * FROM student";
         List<Student> students = new ArrayList<>();
         try (Connection conn = DBConection.getConnection();
-             PreparedStatement prest = conn.prepareStatement(query);) {
+             PreparedStatement prest = conn.prepareStatement(query)) {
             ResultSet rs = prest.executeQuery();
             while (rs.next()) {
                 students.add(StudentMapper.toStudent(rs));
@@ -243,52 +205,55 @@ public class AdminDAOImpl implements IAdminDAO {
 
             return students;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
+        return null;
     }
 
     @Override
-    public boolean addStudent(String name, Date dob, String email, Boolean gender, String phone, String password) {
-        String query = "insert into student(name, dob, email, gender, phone, password) values (?,?,?,?::bit,?,?)";
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);
-            prest.setString(1, name);
-            prest.setDate(2, new java.sql.Date(dob.getTime()));
-            prest.setString(3, email);
-            prest.setInt(4, gender? 1:0);
-            prest.setString(5, phone);
-            prest.setString(6, password);
+    public boolean addStudent(String InputName, Date InputDOB, String InputEmail, Boolean InputGender, String InputPhoneNumber, String InputPassword) {
+        String query = "INSERT INTO student(name, dob, email, gender, phone, password) VALUES (?,?,?,?::bit,?,?)";
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement prest = conn.prepareStatement(query)) {
+            prest.setString(1, InputName);
+            prest.setDate(2, new java.sql.Date(InputDOB.getTime()));
+            prest.setString(3, InputEmail);
+            prest.setInt(4, InputGender? 1:0);
+            prest.setString(5, InputPhoneNumber);
+            prest.setString(6, InputPassword);
             int change = prest.executeUpdate();
             return change > 0;
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
+        return false;
     }
 
     @Override
-    public boolean checkEmailExists(String email) {
-        String query = "select count(*) as cnt from student where email = ?";
+    public boolean checkEmailExists(String InputEmail) {
+        String query = "SELECT count(*) AS cnt FROM student WHERE email = ?";
         try (Connection conn = DBConection.getConnection();
-             PreparedStatement prest = conn.prepareStatement(query);){
-            prest.setString(1, email);
+             PreparedStatement prest = conn.prepareStatement(query)){
+            prest.setString(1, InputEmail);
             ResultSet rs = prest.executeQuery();
             if (rs.next()) {
                 int cnt = rs.getInt("cnt");
-
                 if (cnt > 0) {
                     return true;
                 }
                 return  false;
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
         return false;
     }
 
     @Override
-    public boolean editStudent(int id, String fieldName, String newValue) {
+    public boolean editStudent(int studentId, String fieldName, String newValue) {
         String column = "";
         String cast = "";
         switch (fieldName) {
@@ -306,19 +271,17 @@ public class AdminDAOImpl implements IAdminDAO {
             case "password": column = "password"; break;
             default: return false;
         }
-        String query = "update student set " + column + " = ?" + cast +" where id = ?";
+        String query = "UPDATE student SET " + column + " = ?" + cast +" WHERE id = ?";
         try (Connection conn = DBConection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
-
             ps.setString(1, newValue);
-            ps.setInt(2, id);
-
+            ps.setInt(2, studentId);
             return ps.executeUpdate() > 0;
-
         } catch (SQLException e) {
+            System.err.println(e.getMessage());
             e.printStackTrace();
-            return false;
         }
+        return false;
     }
 
     @Override
@@ -330,13 +293,11 @@ public class AdminDAOImpl implements IAdminDAO {
         } else if (searchBy.equalsIgnoreCase("email")) {
             column = "email";
         } else {
-            // Nếu truyền lung tung -> Trả về rỗng hoặc báo lỗi luôn
-            System.err.println("❌ Tên cột tìm kiếm không hợp lệ!");
             return students;
         }
-        String query ="select * from student where " + column +" ilike ?";
+        String query ="SELECT * FROM student WHERE " + column +" ilike ?";
         try (Connection conn = DBConection.getConnection();
-             PreparedStatement prest = conn.prepareStatement(query);) {
+             PreparedStatement prest = conn.prepareStatement(query)) {
             String str = "%"+key+"%";
             prest.setString(1, str);
             ResultSet rs = prest.executeQuery();
@@ -345,65 +306,64 @@ public class AdminDAOImpl implements IAdminDAO {
             }
             return students;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
+        return null;
     }
 
     @Override
-    public boolean deleteStudent(int id) {
-        String query = "delete from student where id=?";
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(query);
-            ps.setInt(1, id);
+    public boolean deleteStudent(int studentId) {
+        String query = "DELETE FROM student WHERE id=?";
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, studentId);
             int change =  ps.executeUpdate();
             return change > 0;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public boolean checkStudentAttend(int id) {
-        String query = "SELECT COUNT(*) FROM enrollment WHERE student_id = ?";
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(query);
-            ps.setInt(1, id);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
-            }
-        } catch (Exception e) {
+            System.err.println(e.getMessage());
             e.printStackTrace();
         }
         return false;
     }
 
     @Override
-    public boolean checkStudentExists(int id) {
-        String query = "select count(*) from student where id=?";
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);
-            prest.setInt(1, id);
+    public boolean checkStudentAttend(int studentId) {
+        String query = "SELECT COUNT(*) FROM enrollment WHERE student_id = ?";
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, studentId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean checkStudentExists(int studentId) {
+        String query = "SELECT count(*) FROM student WHERE id=?";
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement prest = conn.prepareStatement(query)) {
+            prest.setInt(1, studentId);
             ResultSet rs = prest.executeQuery();
             if (rs.next()) {
                 int count = rs.getInt(1);
                 return count > 0;
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
         return false;
     }
 
-
-    //endregion
-
-    //region Enrollment
     @Override
-    public List<EnrollmentDetailDTO> listStudentByCourse(int id) {
+    public List<EnrollmentDetailDTO> listStudentByCourse(int courseId) {
         List<EnrollmentDetailDTO> list = new ArrayList<>();
          String query = "SELECT e.id, s.name, c.name as course_name, e.registered_at, e.status " +
                  "FROM enrollment e " +
@@ -411,13 +371,13 @@ public class AdminDAOImpl implements IAdminDAO {
                  "JOIN course c ON e.course_id = c.id " +
                  "WHERE e.course_id = ?";
          try (Connection conn = DBConection.getConnection();
-              PreparedStatement prest = conn.prepareStatement(query);) {
-            prest.setInt(1, id);
+              PreparedStatement prest = conn.prepareStatement(query)) {
+            prest.setInt(1, courseId);
             ResultSet rs = prest.executeQuery();
             while (rs.next()) {
                 list.add(new  EnrollmentDetailDTO(
                         rs.getInt("id"),
-                        rs.getString("name"), // Tên sinh viên
+                        rs.getString("name"),
                         rs.getString("course_name"),
                         rs.getDate("registered_at"),
                         rs.getString("status")
@@ -425,26 +385,30 @@ public class AdminDAOImpl implements IAdminDAO {
             }
             return list;
          } catch (SQLException e) {
-             throw new RuntimeException(e);
+             System.err.println(e.getMessage());
+             e.printStackTrace();
          }
+         return null;
     }
 
     @Override
-    public boolean clarifyEnrollment(int id, String action) {
+    public boolean clarifyEnrollment(int enrollmentId, String action) {
         String query = "UPDATE enrollment SET status = ?::course_status WHERE id = ?";
         try (Connection conn = DBConection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query);) {
             prest.setString(1, action);
-            prest.setInt(2, id);
+            prest.setInt(2, enrollmentId);
             int change = prest.executeUpdate();
             return change > 0;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
+        return false;
     }
 
     @Override
-    public List<EnrollmentDetailDTO> getPendingEnrollments(int id) {
+    public List<EnrollmentDetailDTO> getPendingEnrollments(int enrollmentId) {
         List<EnrollmentDetailDTO> list = new ArrayList<>();
         String query = "SELECT e.id, s.name, c.name as course_name, e.registered_at, e.status " +
                 "FROM enrollment e " +
@@ -452,8 +416,8 @@ public class AdminDAOImpl implements IAdminDAO {
                 "JOIN course c ON e.course_id = c.id " +
                 "WHERE e.course_id = ? AND e.status = 'WAITING'";
         try (Connection conn = DBConection.getConnection();
-             PreparedStatement prest = conn.prepareStatement(query);) {
-            prest.setInt(1, id);
+             PreparedStatement prest = conn.prepareStatement(query)) {
+            prest.setInt(1, enrollmentId);
             ResultSet rs = prest.executeQuery();
             while (rs.next()) {
                 list.add(new EnrollmentDetailDTO(
@@ -466,28 +430,28 @@ public class AdminDAOImpl implements IAdminDAO {
             }
             return list;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
+        return null;
     }
 
     @Override
-    public boolean deleteEnrollment(int id) {
+    public boolean deleteEnrollment(int enrollmentId) {
         String query = "DELETE FROM enrollment WHERE id = ? and status = 'CONFIRM'";
         try (Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);) {
-            prest.setInt(1, id);
+            PreparedStatement prest = conn.prepareStatement(query)) {
+            prest.setInt(1, enrollmentId);
             int change = prest.executeUpdate();
             return change > 0;
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
+        return false;
     }
 
-
-    //endregion
-
-    //region analyze
     @Override
     public Map<String ,Integer> totalCourseAndStudent() {
         String query = "SELECT\n" +
@@ -495,7 +459,7 @@ public class AdminDAOImpl implements IAdminDAO {
                 "    (SELECT COUNT(id) FROM student) AS total_student;";
         Map<String, Integer> map = new HashMap<>();
         try (Connection conn = DBConection.getConnection();
-             PreparedStatement prest = conn.prepareStatement(query);) {
+             PreparedStatement prest = conn.prepareStatement(query)) {
             ResultSet rs = prest.executeQuery();
             if (rs.next()) {
                 map.put("courses", rs.getInt("total_course"));
@@ -503,8 +467,10 @@ public class AdminDAOImpl implements IAdminDAO {
             }
             return map;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
+        return null;
     }
 
     @Override
@@ -514,17 +480,17 @@ public class AdminDAOImpl implements IAdminDAO {
                 "left join enrollment e on c.id = e.course_id and e.status='CONFIRM'\n" +
                 "group by c.id";
         Map<String, Integer> map = new HashMap<>();
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement prest = conn.prepareStatement(query)) {
             ResultSet rs = prest.executeQuery();
             while (rs.next()) {
                 map.put(rs.getString("name"), rs.getInt("count"));
             }
             return map;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
+        return null;
     }
-    //endregion
 }
