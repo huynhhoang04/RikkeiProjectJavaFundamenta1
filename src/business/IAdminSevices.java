@@ -3,10 +3,12 @@ package business;
 import model.Admin;
 import model.Course;
 import model.Student;
+import model.dto.EnrollmentDetailDTO;
 
 import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public interface IAdminSevices {
     Admin login(String username, String password);
@@ -22,16 +24,19 @@ public interface IAdminSevices {
 
     List<Student> showListStudent();
     boolean addStudent(String name, Date dob, String email, boolean gender, String phone, String password);
-    boolean editStudent(int id, String fieldName, String newValue) throws ParseException;
+    boolean editStudent(int id, String fieldName, String newValue) ;
     List<Student> findStudent(String key, String searchBy);
     List<Student> sortListStudent(String sortBy, String sortOrder);
     boolean deleteStudent(int id);
 
-    void showRegistered();
-    void comfirmRegisteration();
+    List<EnrollmentDetailDTO> getCourseEnrollments(int courseId);
+    List<EnrollmentDetailDTO> getPendingEnrollments(int courseId);
+    boolean approveEnrollment(int enrollmentId);
+    boolean denyEnrollment(int enrollmentId);
+    boolean deleteEnrollment(int enrollmentId);
 
-    void showTotalCoursesAndStudents();
-    void sgowTotalStudentsByCourse();
-    void Top5CourseWithStudents();
-    void CourseWithMoreThan10Students();
+    Map<String, Integer> showTotalCoursesAndStudents();
+    Map<String, Integer> showTotalStudentsByCourse();
+    Map<String, Integer> Top5CourseWithStudents();
+    Map<String, Integer> CourseWithMoreThan10Students();
 }

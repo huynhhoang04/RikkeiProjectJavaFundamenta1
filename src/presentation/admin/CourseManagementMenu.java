@@ -5,8 +5,14 @@ import dao.IAdminDAO;
 import dao.impl.AdminDAOImpl;
 import model.Course;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
+
+import static uttil.checkDOBValid.isValidDOB;
+import static uttil.checkEmailValid.isValidEmail;
+import static uttil.checkPhoneValid.checkPhone;
 
 public class CourseManagementMenu {
     Scanner sc = new Scanner(System.in);
@@ -33,7 +39,7 @@ public class CourseManagementMenu {
                         handleShowListCourses();
                         break;
                     case 2:
-
+                        handleAddCourse();
                         break;
                     case 3:
                         handleUpdateCourse();
@@ -45,7 +51,7 @@ public class CourseManagementMenu {
                         handleFindCourse();
                         break;
                     case 6:
-                        handleShowListCourses();
+                        handleSortCourse();
                         break;
                     case 7:
                         return;
@@ -298,6 +304,76 @@ public class CourseManagementMenu {
             } else {
                 System.out.println("❌ Xóa thất bại!");
                 System.out.println("👉 Nguyên nhân: ID không tồn tại HOẶC Khóa học đang có học viên theo học.");
+            }
+        }
+    }
+
+    public void handleAddCourse() {
+        Scanner sc = new Scanner(System.in);
+
+        while (true) {
+            System.out.println("\n========== THÊM KHÓA HỌC MỚI ==========");
+            System.out.println("(Gõ 'exit' để hủy và quay lại menu chính)");
+
+            try {
+                // 1. NHẬP TÊN KHÓA HỌC
+                System.out.print("👉 Nhập tên khóa học: ");
+                String name = sc.nextLine().trim();
+                if (name.equalsIgnoreCase("exit")) break;
+
+                if (name.isEmpty()) {
+                    System.out.println("❌ Tên khóa học không được để trống!");
+                    continue;
+                }
+
+                // 2. NHẬP THỜI LƯỢNG (Phải validate số)
+                System.out.print("👉 Nhập thời lượng (số giờ/buổi): ");
+                String durationStr = sc.nextLine().trim();
+                if (durationStr.equalsIgnoreCase("exit")) break;
+
+                int duration = 0;
+                try {
+                    duration = Integer.parseInt(durationStr);
+                    // Validate logic cơ bản ở View luôn cho nhanh
+                    if (duration <= 0) {
+                        System.out.println("❌ Thời lượng phải lớn hơn 0!");
+                        continue;
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("❌ Thời lượng phải là một số nguyên (Ví dụ: 30, 45)!");
+                    continue;
+                }
+
+                // 3. NHẬP TÊN GIẢNG VIÊN
+                System.out.print("👉 Nhập tên giảng viên: ");
+                String instructor = sc.nextLine().trim();
+                if (instructor.equalsIgnoreCase("exit")) break;
+
+                if (instructor.isEmpty()) {
+                    System.out.println("❌ Tên giảng viên không được để trống!");
+                    continue;
+                }
+
+                // --- GỌI SERVICE ---
+                // Hàm service của ông check duration <= 0 trả về false,
+                // nhưng ở trên View tôi đã chặn trước rồi cho chắc.
+                boolean isSuccess = services.addCourse(name, duration, instructor);
+
+                // --- KẾT QUẢ ---
+                if (isSuccess) {
+                    System.out.println("✅ Thêm khóa học thành công!");
+
+                    // Hỏi xem có muốn nhập tiếp không
+                    System.out.print("Bạn có muốn thêm khóa khác không? (y/n): ");
+                    if (sc.nextLine().trim().equalsIgnoreCase("n")) {
+                        break;
+                    }
+                } else {
+                    System.out.println("❌ Thêm thất bại! (Có thể do lỗi hệ thống).");
+                }
+
+            } catch (Exception e) {
+                System.out.println("❌ Đã xảy ra lỗi: " + e.getMessage());
             }
         }
     }

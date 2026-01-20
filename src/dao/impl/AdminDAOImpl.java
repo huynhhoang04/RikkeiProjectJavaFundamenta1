@@ -5,6 +5,7 @@ import model.Admin;
 import model.Course;
 import model.Enrollment;
 import model.Student;
+import model.dto.EnrollmentDetailDTO;
 import uttil.CourseMapper;
 import uttil.DBConection;
 import uttil.StudentMapper;
@@ -402,130 +403,112 @@ public class AdminDAOImpl implements IAdminDAO {
 
     //region Enrollment
     @Override
-    public void listStudentByCourse(int id) {
-         String query = "select distinct student_id, status from enrollment where course_id=?";
-         try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);
+    public List<EnrollmentDetailDTO> listStudentByCourse(int id) {
+        List<EnrollmentDetailDTO> list = new ArrayList<>();
+         String query = "SELECT e.id, s.name, c.name as course_name, e.registered_at, e.status " +
+                 "FROM enrollment e " +
+                 "JOIN student s ON e.student_id = s.id " +
+                 "JOIN course c ON e.course_id = c.id " +
+                 "WHERE e.course_id = ?";
+         try (Connection conn = DBConection.getConnection();
+              PreparedStatement prest = conn.prepareStatement(query);) {
             prest.setInt(1, id);
             ResultSet rs = prest.executeQuery();
             while (rs.next()) {
-                int student_id = rs.getInt("student_id");
-                String status = rs.getString("status");
-
-                Student stu = findStudent(student_id);
-                System.out.println(stu.getId() + "|" + stu.getName() + "|" + stu.getDateOfBirth() + "|" + stu.getEmail() + "|" + stu.getGender() + "|" + stu.getPhoneNumber() + "|" + status);
+                list.add(new  EnrollmentDetailDTO(
+                        rs.getInt("id"),
+                        rs.getString("name"), // Tên sinh viên
+                        rs.getString("course_name"),
+                        rs.getDate("registered_at"),
+                        rs.getString("status")
+                ));
             }
+            return list;
          } catch (SQLException e) {
              throw new RuntimeException(e);
          }
     }
 
     @Override
-    public Student findStudent(int id) {
-        String query = "select * from student where id=?";
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);
-            prest.setInt(1, id);
-            ResultSet rs = prest.executeQuery();
-            if (rs.next()) {
-                return StudentMapper.toStudent(rs);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return  null;
-    }
-
-    @Override
-    public void clarifyEnrollment(int id, String action) {
-        String query = new  String();
-        if(action.equals("Confirm")) {
-            query = "update enrollment set status='CONFIRM' where id=?";
-        }
-        if(action.equals("Denied")) {
-            query = "update enrollment set status='DENIED' where id=?";
-        }
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);
-            prest.setInt(1, id);
-            prest.executeUpdate();
-            System.out.println("Thành công!");
+    public boolean clarifyEnrollment(int id, String action) {
+        String query = "UPDATE enrollment SET status = ?::course_status WHERE id = ?";
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement prest = conn.prepareStatement(query);) {
+            prest.setString(1, action);
+            prest.setInt(2, id);
+            int change = prest.executeUpdate();
+            return change > 0;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public List<Enrollment> unclarifyEnrollment(int id) {
-        List<Enrollment> enrollments = new ArrayList<>();
-        String query = "select * from enrollment where course_id=? and status='WAITING'";
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);
+    public List<EnrollmentDetailDTO> getPendingEnrollments(int id) {
+        List<EnrollmentDetailDTO> list = new ArrayList<>();
+        String query = "SELECT e.id, s.name, c.name as course_name, e.registered_at, e.status " +
+                "FROM enrollment e " +
+                "JOIN student s ON e.student_id = s.id " +
+                "JOIN course c ON e.course_id = c.id " +
+                "WHERE e.course_id = ? AND e.status = 'WAITING'";
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement prest = conn.prepareStatement(query);) {
             prest.setInt(1, id);
             ResultSet rs = prest.executeQuery();
             while (rs.next()) {
-                int rsid = rs.getInt("id");
-                int student_id = rs.getInt("student_id");
-                int course_id = rs.getInt("course_id");
-                java.sql.Date registered_at = rs.getDate("registered_at");
-                String status = rs.getString("status");
-
-                System.out.println(rsid);
-                enrollments.add(new Enrollment(rsid, student_id, course_id, registered_at, status));
+                list.add(new EnrollmentDetailDTO(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("course_name"),
+                        rs.getDate("registered_at"),
+                        rs.getString("status")
+                ));
             }
-            return enrollments;
+            return list;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public boolean checkEnrollment(int id, int course_id) {
-        String query = "select count(*) from enrollment where id=? and course_id=? and  status='WAITING'";
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);
+    public boolean deleteEnrollment(int id) {
+        String query = "DELETE FROM enrollment WHERE id = ? and status = 'CONFIRM'";
+        try (Connection conn = DBConection.getConnection();
+            PreparedStatement prest = conn.prepareStatement(query);) {
             prest.setInt(1, id);
-            prest.setInt(2, course_id);
-            ResultSet rs = prest.executeQuery();
-            if (rs.next()) {
-                int count = rs.getInt("count");
-                return (count > 0);
-            }
+            int change = prest.executeUpdate();
+            return change > 0;
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return false;
     }
+
+
     //endregion
 
     //region analyze
     @Override
-    public void totalCourseAndStudent() {
+    public Map<String ,Integer> totalCourseAndStudent() {
         String query = "SELECT\n" +
                 "(SELECT COUNT(id) FROM course) AS total_course,\n" +
                 "    (SELECT COUNT(id) FROM student) AS total_student;";
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);
+        Map<String, Integer> map = new HashMap<>();
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement prest = conn.prepareStatement(query);) {
             ResultSet rs = prest.executeQuery();
             if (rs.next()) {
-                int total_course = rs.getInt("total_course");
-                int total_student = rs.getInt("total_student");
-                System.out.println("Tổng khóa học : " + total_course);
-                System.out.println("Tổng học viên : "  + total_student);
+                map.put("courses", rs.getInt("total_course"));
+                map.put("students", rs.getInt("total_student"));
             }
+            return map;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public void analyzeTotalStudentByCourse() {
+    public Map<String ,Integer> analyzeTotalStudentByCourse() {
         String query ="select c.name, count(e.student_id)\n" +
                 "from course as c\n" +
                 "left join enrollment e on c.id = e.course_id and e.status='CONFIRM'\n" +
@@ -536,75 +519,12 @@ public class AdminDAOImpl implements IAdminDAO {
             PreparedStatement prest = conn.prepareStatement(query);
             ResultSet rs = prest.executeQuery();
             while (rs.next()) {
-                String name = rs.getString("name");
-                int count = rs.getInt("count");
-                map.put(name, count);
+                map.put(rs.getString("name"), rs.getInt("count"));
             }
-
-            map.forEach((k,v)->{
-                System.out.println("Tên khóa : " + k + " Số học viên : " + v);
-            });
+            return map;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
-
-    @Override
-    public void Top5CourseWithMostStudents() {
-        String query = "select c.name, count(e.student_id)\n" +
-                "from course as c\n" +
-                "left join enrollment e on c.id = e.course_id and e.status='CONFIRM'\n" +
-                "group by c.id\n" +
-                "order by count(e.student_id) desc, c.name asc\n" +
-                "limit 5";
-
-        Map<String, Integer> map = new HashMap<>();
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);
-            ResultSet rs = prest.executeQuery();
-            while (rs.next()) {
-                String name = rs.getString("name");
-                int count = rs.getInt("count");
-                map.put(name, count);
-            }
-
-            map.forEach((k,v)->{
-                System.out.println("Tên khóa : " + k + " Số học viên : " + v);
-            });
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public void CourseWithMoreThan10Students() {
-        String query = "select c.name, count(e.student_id)\n" +
-                "from course as c\n" +
-                "left join enrollment e on c.id = e.course_id and e.status='CONFIRM'\n" +
-                "group by c.id\n" +
-                "having count(e.student_id) >= 10\n" +
-                "order by count(e.student_id) desc, c.name asc";
-
-        Map<String, Integer> map = new HashMap<>();
-        try {
-            Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query);
-            ResultSet rs = prest.executeQuery();
-            while (rs.next()) {
-                String name = rs.getString("name");
-                int count = rs.getInt("count");
-                map.put(name, count);
-            }
-
-            map.forEach((k,v)->{
-                System.out.println("Tên khóa : " + k + " Số học viên : " + v);
-            });
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
     //endregion
 }

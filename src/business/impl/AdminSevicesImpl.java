@@ -7,10 +7,12 @@ import dao.impl.AdminDAOImpl;
 import model.Course;
 import model.Enrollment;
 import model.Student;
+import model.dto.EnrollmentDetailDTO;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static uttil.checkPhoneValid.checkPhone;
 import static uttil.checkDOBValid.isValidDOB;
@@ -184,145 +186,68 @@ public class AdminSevicesImpl implements IAdminSevices {
 
     //region Enrollment
     @Override
-    public void showRegistered() {
-        while (true) {
-            System.out.println("nhập id khóa hocjh : ");
-            String strid = input.nextLine();
-            if(strid.isBlank()){
-                System.out.println("không được đẻ trống");
-                continue;
-            }
-            if(!strid.matches("\\d+")){
-                System.out.println("Id phải là số!");
-                continue;
-            }
-            int id = Integer.parseInt(strid);
-            if(!dao.checkCourse(id)){
-                System.out.println("Khóa học không tồn tại");
-                continue;
-            }
-            else {
-                dao.listStudentByCourse(id);
-                break;
-            }
+    public List<EnrollmentDetailDTO> getCourseEnrollments(int courseId) {
+        if(!dao.checkCourse(courseId)){
+            return null;
         }
+        return dao.listStudentByCourse(courseId);
     }
 
     @Override
-    public void comfirmRegisteration() {
-        nemuChinh : while (true) {
-            System.out.println("nhập id khóa hocjh : ");
-            String strid = input.nextLine();
-            if(strid.isBlank()){
-                System.out.println("không được đẻ trống");
-                continue;
-            }
-            if(!strid.matches("\\d+")){
-                System.out.println("Id phải là số!");
-                continue;
-            }
-            int id = Integer.parseInt(strid);
-            if(!dao.checkCourse(id)){
-                System.out.println("Khóa học không tồn tại");
-                continue;
-            }
-            else{
-                System.out.println("==========================");
-                System.out.println("1. Xem phiếu đăng ký đang đợi xác nhận");
-                System.out.println("2. Chấp nhận phiếu đang ký");
-                System.out.println("3. Từ chối phiếu đăng ký");
-                System.out.println("4. Trở về");
-                System.out.println("==========================");
-                System.out.print("Nhập lựa chọn : ");
-                switch (input.nextLine()) {
-                    case "1":
-                        List<Enrollment> enrollments = dao.unclarifyEnrollment(id);
-                        for (Enrollment enrollment : enrollments) {
-                            System.out.println(enrollment);
-                        }
-                        break;
-                    case "2":
-                        System.out.println("Nhập id phiếu đăng ký");
-                        String strenrollmentId = input.nextLine();
-                        if(strenrollmentId.isBlank()){
-                            System.out.println("Không được để trống!");
-                            continue;
-                        }
-                        if(!strenrollmentId.matches("\\d+")){
-                            System.out.println("ID phải là số");
-                            continue ;
-                        }
-                        int enrollmentId = Integer.parseInt(strenrollmentId);
-                        if(!dao.checkEnrollment(enrollmentId, id)){
-                            System.out.println("Invalid!");
-                            continue ;
-                        }
-                        else {
-                            dao.clarifyEnrollment(enrollmentId, "Confirm");
-                            break;
-                        }
-                    case "3":
-                        System.out.println("Nhập id phiếu đăng ký");
-                        String strenrollmentId2 = input.nextLine();
-                        if(strenrollmentId2.isBlank()){
-                            System.out.println("Không được để trống!");
-                            continue;
-                        }
-                        if(!strenrollmentId2.matches("\\d+")){
-                            System.out.println("ID phải là số");
-                            continue ;
-                        }
-                        int enrollmentId2 = Integer.parseInt(strenrollmentId2);
-                        if(!dao.checkEnrollment(enrollmentId2, id)){
-                            System.out.println("Invalid!");
-                            continue ;
-                        }
-                        else {
-                            dao.clarifyEnrollment(enrollmentId2, "Denied");
-                            break;
-                        }
-                    case "4":
-                        break nemuChinh;
-                    default:
-                        System.out.println("Lựa chọn Invalid!");
-                }
-            }
+    public List<EnrollmentDetailDTO> getPendingEnrollments(int courseId) {
+        if(!dao.checkCourse(courseId)){
+            return null;
         }
+        return dao.getPendingEnrollments(courseId);
     }
+
+    @Override
+    public boolean approveEnrollment(int enrollmentId) {
+        return dao.clarifyEnrollment(enrollmentId, "CONFIRM");
+    }
+
+    @Override
+    public boolean denyEnrollment(int enrollmentId) {
+        return dao.clarifyEnrollment(enrollmentId, "DENIED");
+    }
+
+    @Override
+    public boolean deleteEnrollment(int enrollmentId) {
+        return dao.deleteEnrollment(enrollmentId);
+    }
+
 
     //endregion
 
     //region analyze
     @Override
-    public void showTotalCoursesAndStudents() {
-        dao.totalCourseAndStudent();
-        System.out.print("Nhập bất kì đẻ trở về : ");
-        input.nextLine();
+    public Map<String, Integer> showTotalCoursesAndStudents() {
+        return dao.totalCourseAndStudent();
     }
 
     @Override
-    public void sgowTotalStudentsByCourse() {
-        dao.analyzeTotalStudentByCourse();
-        System.out.print("Nhập bất kì đẻ trở về : ");
-        input.nextLine();
+    public Map<String, Integer> showTotalStudentsByCourse() {
+        return dao.analyzeTotalStudentByCourse();
     }
 
     @Override
-    public void Top5CourseWithStudents() {
-        System.out.println("==========Top 5 khóa học có nhiều học sinh nhất===========");
-        dao.Top5CourseWithMostStudents();
-        System.out.print("Nhập bất kì đẻ trở về : ");
-        input.nextLine();
+    public Map<String, Integer> Top5CourseWithStudents() {
+        Map<String, Integer> data = dao.analyzeTotalStudentByCourse();
+
+        return data.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .limit(5)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,(e1, e2) -> e2, LinkedHashMap::new ));
     }
 
     @Override
-    public void CourseWithMoreThan10Students() {
-        System.out.println("==========Khóa học có nhiều hơn 10 học sinh ===========");
-        dao.CourseWithMoreThan10Students();
-        System.out.print("Nhập bất kì đẻ trở về : ");
-        input.nextLine();
-    }
+    public Map<String, Integer> CourseWithMoreThan10Students() {
+        Map<String, Integer> data = dao.analyzeTotalStudentByCourse();
 
+        return data.entrySet().stream()
+                .filter(e -> e.getValue() >= 10)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,(e1, e2) -> e2, LinkedHashMap::new));
+    }
 
     //endregion
 }

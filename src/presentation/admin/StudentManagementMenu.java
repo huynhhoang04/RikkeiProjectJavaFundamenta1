@@ -156,49 +156,81 @@ public class StudentManagementMenu {
 
     public void handleEditStudent() {
         Scanner sc = new Scanner(System.in);
-        System.out.print("👉 Nhập ID học viên cần sửa: ");
-        int id = Integer.parseInt(sc.nextLine());
 
+        // 1. Nhập ID (Giữ nguyên)
+        System.out.println("\n========== CHỈNH SỬA THÔNG TIN HỌC VIÊN ==========");
+        System.out.print("👉 Nhập ID học viên cần sửa (hoặc 0 để thoát): ");
+        String idStr = sc.nextLine().trim();
+        if (!idStr.matches("\\d+")) {
+            System.out.println("❌ ID phải là số nguyên!"); return;
+        }
+        int id = Integer.parseInt(idStr);
+        if (id == 0) return;
+
+        // 2. Vòng lặp sửa
         while (true) {
-            System.out.println("\n========== SỬA THÔNG TIN ==========");
-            System.out.println("1. Tên");
-            System.out.println("2. Ngày sinh");
-            System.out.println("3. Email");
-            System.out.println("4. Giới tính");
-            System.out.println("5. SĐT");
-            System.out.println("6. Mật khẩu");
-            System.out.println("0. Quay lại");
-            System.out.print("Chọn thông tin cần sửa: ");
-            String choice = sc.nextLine();
-
-            String fieldName = "";
-            String newValue = "";
+            System.out.println("\n--- CHỌN MỤC CẦN SỬA ---");
+            System.out.println("1. Tên | 2. Ngày sinh | 3. Email | 4. Giới tính | 5. SĐT | 6. Mật khẩu | 0. Quay lại");
+            System.out.print("👉 Chọn số: ");
+            String choice = sc.nextLine().trim();
 
             if (choice.equals("0")) break;
 
+            String fieldName = "";
+            String label = "";
+
+            // --- BƯỚC 1: CẤU HÌNH (Mapping) ---
             switch (choice) {
-                case "1": fieldName = "name"; break;
-                case "2": fieldName = "dob"; break;
-                case "3": fieldName = "email"; break;
-                case "4": fieldName = "gender"; break;
-                case "5": fieldName = "phone"; break;
-                case "6": fieldName = "password"; break;
-                default: System.out.println("❌ Sai lựa chọn!"); continue;
+                case "1": fieldName = "name";     label = "Tên"; break;
+                case "2": fieldName = "dob";      label = "Ngày sinh (yyyy-MM-dd)"; break;
+                case "3": fieldName = "email";    label = "Email"; break;
+                case "4": fieldName = "gender";   label = "Giới tính (1: Nam, 0: Nữ)"; break;
+                case "5": fieldName = "phone";    label = "Số điện thoại"; break;
+                case "6": fieldName = "password"; label = "Mật khẩu"; break;
+                default: System.out.println("❌ Chọn sai!"); continue;
             }
 
-            System.out.print("👉 Nhập giá trị mới: ");
-            newValue = sc.nextLine().trim();
+            // --- BƯỚC 2: NHẬP LIỆU (Input 1 lần duy nhất) ---
+            System.out.printf("👉 Nhập %s mới: ", label);
+            String newValue = sc.nextLine().trim();
 
-            // Validate sơ bộ ở View trước khi gửi (Tùy chọn)
-            if (fieldName.equals("email") && !isValidEmail(newValue)) {
+            // --- BƯỚC 3: VALIDATE & CHUYỂN ĐỔI DỮ LIỆU ---
+            if (newValue.isEmpty()) {
+                System.out.println("❌ Không được để trống!"); continue;
+            }
+
+            if (fieldName.equals("dob") && !isValidDOB(newValue)) { //
+                System.out.println("❌ Ngày sinh sai định dạng (yyyy-MM-dd)!"); continue;
+            }
+
+            if (fieldName.equals("email") && !isValidEmail(newValue)) { //
                 System.out.println("❌ Email không hợp lệ!"); continue;
             }
 
-            // GỌI SERVICE
-            if (services.editStudent(id, fieldName, newValue)) {
+            if (fieldName.equals("phone") && !checkPhone(newValue)) { //
+                System.out.println("❌ SĐT không hợp lệ (Phải là số VN)!"); continue;
+            }
+
+            if (fieldName.equals("password") && newValue.length() < 6) {
+                System.out.println("⚠️ Mật khẩu nên dài hơn 6 ký tự!");
+                // Chỉ cảnh báo, vẫn cho sửa
+            }
+
+            // Xử lý riêng cho Gender: Chuyển chữ "Nam/Nu" thành "1/0" để DB hiểu
+            if (fieldName.equals("gender")) {
+                if (newValue.equalsIgnoreCase("Nam") || newValue.equals("1")) newValue = "1";
+                else if (newValue.equalsIgnoreCase("Nu") || newValue.equals("0") || newValue.equals("2")) newValue = "0";
+                else {
+                    System.out.println("❌ Giới tính không hợp lệ (Nhập 1 hoặc 0)!"); continue;
+                }
+            }
+
+            // --- BƯỚC 4: GỌI SERVICE ---
+            boolean success = services.editStudent(id, fieldName, newValue);
+            if (success) {
                 System.out.println("✅ Cập nhật thành công!");
             } else {
-                System.out.println("❌ Cập nhật thất bại (Lỗi hệ thống hoặc ID không tồn tại).");
+                System.out.println("❌ Thất bại (Lỗi hệ thống hoặc trùng Email)!");
             }
         }
     }

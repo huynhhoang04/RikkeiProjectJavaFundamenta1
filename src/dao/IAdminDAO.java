@@ -4,9 +4,11 @@ import model.Admin;
 import model.Course;
 import model.Enrollment;
 import model.Student;
+import model.dto.EnrollmentDetailDTO;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public interface IAdminDAO {
     void showByStudentID(int id);
@@ -34,14 +36,11 @@ public interface IAdminDAO {
     boolean checkStudentAttend(int id);
     boolean checkStudentExists(int id);
 
-    void listStudentByCourse(int id);
-    Student findStudent(int id);
-    void clarifyEnrollment(int id, String action);
-    List<Enrollment> unclarifyEnrollment(int id);
-    boolean checkEnrollment(int id, int course_id);
+    List<EnrollmentDetailDTO> listStudentByCourse(int id);
+    boolean clarifyEnrollment(int id, String action);
+    List<EnrollmentDetailDTO> getPendingEnrollments(int id);
+    boolean deleteEnrollment(int id);
 
-    void totalCourseAndStudent();
-    void analyzeTotalStudentByCourse();
-    void Top5CourseWithMostStudents();
-    void CourseWithMoreThan10Students();
+    Map<String ,Integer> totalCourseAndStudent();
+    Map<String, Integer> analyzeTotalStudentByCourse();
 }
