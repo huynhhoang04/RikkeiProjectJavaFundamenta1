@@ -258,8 +258,6 @@ public class StudentManagementMenu {
     }
 
     public void handleSortStudent() {
-        Scanner sc = new Scanner(System.in);
-
         while (true) {
             System.out.println("═══════════════════════════════════");
             System.out.println("☰ SẮP XẾP HỌC VIÊN ");
