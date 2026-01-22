@@ -68,14 +68,14 @@ public class CourseManagementMenu {
     }
 
     private void printCourseList(List<Course> list) {
-        System.out.println("┌───────┬───────────────────────────┬─────────────────┬─────────────────┬────────────┐");
-        System.out.printf("│ %-5s │ %-25s │ %-15s │ %-15s │ %-10s │\n", "ID", "Tên Khóa Học", "Thời lượng(giờ)", "Giảng viên", "Ngày tạo");
-        System.out.println("├───────┼───────────────────────────┼─────────────────┼─────────────────┼────────────┤");
+        System.out.println("┌───────┬────────────────────────────────┬─────────────────┬─────────────────┬────────────┐");
+        System.out.printf("│ %-5s │ %-30s │ %-15s │ %-15s │ %-10s │\n", "ID", "Tên Khóa Học", "Thời lượng(giờ)", "Giảng viên", "Ngày tạo");
+        System.out.println("├───────┼────────────────────────────────┼─────────────────┼─────────────────┼────────────┤");
         for (Course c : list) {
-            System.out.printf("│ %-5d │ %-25s │ %-15d │ %-15s │ %-10s │\n",
+            System.out.printf("│ %-5d │ %-30s │ %-15d │ %-15s │ %-10s │\n",
                     c.getId(), c.getName(), c.getDuration(), c.getInstructor() , c.getCreated_at());
         }
-        System.out.println("└───────┴───────────────────────────┴─────────────────┴─────────────────┴────────────┘");
+        System.out.println("└───────┴────────────────────────────────┴─────────────────┴─────────────────┴────────────┘");
     }
 
     private int inputCourseId() {

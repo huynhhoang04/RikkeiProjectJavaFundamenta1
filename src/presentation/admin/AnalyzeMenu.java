@@ -1,9 +1,6 @@
 package presentation.admin;
 
 import business.IAdminSevices;
-import business.impl.AdminSevicesImpl;
-import dao.IAdminDAO;
-import dao.impl.AdminDAOImpl;
 
 import java.util.Map;
 import java.util.Scanner;

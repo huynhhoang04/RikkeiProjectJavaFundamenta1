@@ -5,6 +5,7 @@ import model.Course;
 import model.Enrollment;
 import model.Student;
 import model.dto.EnrollmentDetailDTO;
+import org.mindrot.jbcrypt.BCrypt;
 import util.CourseMapper;
 import util.DBConection;
 import util.StudentMapper;
@@ -17,14 +18,16 @@ public class StudentDAOImpl implements IStudentDAO {
 
     @Override
     public Student checkStudent(String InputEmail, String InputPassword) {
-        String query = "SELECT * FROM student WHERE email = ? AND password = ?";
+        String query = "SELECT * FROM student WHERE email = ?";
         try(Connection conn = DBConection.getConnection();
             PreparedStatement prest = conn.prepareStatement(query)) {
             prest.setString(1, InputEmail);
-            prest.setString(2, InputPassword);
             ResultSet rs = prest.executeQuery();
             if (rs.next()) {
-                return StudentMapper.toStudent(rs);
+                String outpw = rs.getString("password");
+                if (BCrypt.checkpw(InputPassword, outpw)) {
+                    return StudentMapper.toStudent(rs);
+                }
             }
         } catch (SQLException e) {
             System.err.println(e.getMessage());
@@ -189,7 +192,7 @@ public class StudentDAOImpl implements IStudentDAO {
 
     @Override
     public boolean cancelEnrollment(int enrollmentID) {
-        String query = "UPDATE enrollment SET status = 'CANCER' WHERE id = ?";
+        String query = "UPDATE enrollment SET status = 'CANCEL' WHERE id = ?";
         try (Connection conn = DBConection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query))
         {

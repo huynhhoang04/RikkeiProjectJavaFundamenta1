@@ -48,15 +48,15 @@ public class EnrollmentManagementMenu {
     }
 
     private void printList(List<EnrollmentDetailDTO> list) {
-        System.out.println("┌───────┬──────────────────────┬──────────────────────┬──────────────┬────────────┐");
-        System.out.printf("│ %-5s │ %-20s │ %-20s │ %-12s │ %-10s │\n",
+        System.out.println("┌───────┬──────────────────────┬──────────────────────────────────────────┬──────────────┬────────────┐");
+        System.out.printf("│ %-5s │ %-20s │ %-40s │ %-12s │ %-10s │\n",
                 "ID", "Tên Học Viên", "Tên Khóa", "Ngày ĐK", "Trạng Thái");
-        System.out.println("├───────┼──────────────────────┼──────────────────────┼──────────────┼────────────┤");
+        System.out.println("├───────┼──────────────────────┼──────────────────────────────────────────┼──────────────┼────────────┤");
         for (EnrollmentDetailDTO e : list) {
-            System.out.printf("│ %-5d │ %-20s │ %-20s │ %-12s │ %-10s │\n",
+            System.out.printf("│ %-5d │ %-20s │ %-40s │ %-12s │ %-10s │\n",
                     e.getId(), e.getStudentName(), e.getCourseName(), e.getRegisteredAt(), e.getStatus());
         }
-        System.out.println("└───────┴──────────────────────┴──────────────────────┴──────────────┴────────────┘");
+        System.out.println("└───────┴──────────────────────┴──────────────────────────────────────────┴──────────────┴────────────┘");
     }
 
     private int inputCourseId() {

@@ -5,6 +5,7 @@ import model.Admin;
 import model.Course;
 import model.Student;
 import model.dto.EnrollmentDetailDTO;
+import org.mindrot.jbcrypt.BCrypt;
 import util.CourseMapper;
 import util.DBConection;
 import util.StudentMapper;
@@ -18,17 +19,18 @@ public class AdminDAOImpl implements IAdminDAO {
 
     @Override
     public Admin checkAdmin(String InputUsername, String InputPassword) {
-        String query = "SELECT id, username, password FROM admin WHERE username=? AND password=?";
+        String query = "SELECT id, username, password FROM admin WHERE username=? ";
         try (Connection conn = DBConection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
             prest.setString(1, InputUsername);
-            prest.setString(2, InputPassword);
             ResultSet rs = prest.executeQuery();
             if (rs.next()) {
                 int id = rs.getInt("id");
                 String OutputUsername = rs.getString("username");
                 String OutputPassword = rs.getString("password");
-                return new Admin(id, OutputUsername, OutputPassword);
+                if (BCrypt.checkpw(InputPassword, OutputPassword)) {
+                    return new Admin(id, OutputUsername, OutputPassword);
+                }
             }
         } catch (SQLException e) {
             System.err.println(e.getMessage());
@@ -213,6 +215,7 @@ public class AdminDAOImpl implements IAdminDAO {
 
     @Override
     public boolean addStudent(String InputName, Date InputDOB, String InputEmail, Boolean InputGender, String InputPhoneNumber, String InputPassword) {
+        String hashpw = BCrypt.hashpw(InputPassword, BCrypt.gensalt());
         String query = "INSERT INTO student(name, dob, email, gender, phone, password) VALUES (?,?,?,?::bit,?,?)";
         try (Connection conn = DBConection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
@@ -221,7 +224,7 @@ public class AdminDAOImpl implements IAdminDAO {
             prest.setString(3, InputEmail);
             prest.setInt(4, InputGender? 1:0);
             prest.setString(5, InputPhoneNumber);
-            prest.setString(6, InputPassword);
+            prest.setString(6, hashpw);
             int change = prest.executeUpdate();
             return change > 0;
         } catch (SQLException e) {
