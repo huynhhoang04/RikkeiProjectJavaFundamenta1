@@ -1,7 +1,7 @@
 package presentation;
 
 import business.IAdminServices;
-import presentation.admin.AnalyzeMenu;
+import presentation.admin.StatisticsMenu;
 import presentation.admin.CourseManagementMenu;
 import presentation.admin.EnrollmentManagementMenu;
 import presentation.admin.StudentManagementMenu;
@@ -46,7 +46,7 @@ public class AdminMenuView {
                         em.showMenu();
                         break;
                     case "4":
-                        AnalyzeMenu am = new AnalyzeMenu(sc,services);
+                        StatisticsMenu am = new StatisticsMenu(sc,services);
                         am.showMenu();
                         break ;
                     case "5":

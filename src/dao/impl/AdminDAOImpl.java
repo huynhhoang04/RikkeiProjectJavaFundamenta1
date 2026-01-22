@@ -16,7 +16,9 @@ import java.util.Date;
 
 public class AdminDAOImpl implements IAdminDAO {
 
+    //region authentication (đăng nhập)
 
+        // tìm admin theo username
     @Override
     public Admin login(String InputUsername, String InputPassword) {
         String query = "SELECT id, username, password FROM admin WHERE username=? ";
@@ -28,6 +30,7 @@ public class AdminDAOImpl implements IAdminDAO {
                 int id = rs.getInt("id");
                 String OutputUsername = rs.getString("username");
                 String OutputPassword = rs.getString("password");
+                // so sánh mật khẩu nhập vào với mật khẩu đã mã hóa trong db
                 if (BCrypt.checkpw(InputPassword, OutputPassword)) {
                     return new Admin(id, OutputUsername, OutputPassword);
                 }
@@ -38,7 +41,10 @@ public class AdminDAOImpl implements IAdminDAO {
         }
         return null;
     }
+    //endregion
 
+    //region course management (quản lý khóa học)
+    // lấy toàn bộ danh sách khóa học
     @Override
     public List<Course> getAllCourses() {
         String query = "SELECT * FROM course";
@@ -47,6 +53,7 @@ public class AdminDAOImpl implements IAdminDAO {
              PreparedStatement prest = conn.prepareStatement(query)) {
             ResultSet rs = prest.executeQuery();
             while (rs.next()) {
+                // map dữ liệu từ resultset sang đối tượng course
                 courses.add(CourseMapper.toCourse(rs));
             }
             return courses;
@@ -57,6 +64,7 @@ public class AdminDAOImpl implements IAdminDAO {
         return null;
     }
 
+    // thêm mới khóa học vào db
     @Override
     public boolean createCourse(String InputName, int InputDuration, String InputInstructor) {
         String query = "INSERT INTO course(name, duration, instructor) VALUES (?,?,?)";
@@ -65,6 +73,7 @@ public class AdminDAOImpl implements IAdminDAO {
             prest.setString(1, InputName);
             prest.setInt(2, InputDuration);
             prest.setString(3, InputInstructor);
+            // executeUpdate trả về số dòng bị ảnh hưởng
             int change =  prest.executeUpdate();
             return change > 0;
         } catch (SQLException e) {
@@ -74,6 +83,7 @@ public class AdminDAOImpl implements IAdminDAO {
         return false;
     }
 
+    //cập nhật tên khóa học
     @Override
     public boolean updateCourseName(int courseId, String newName) {
         String query = "UPDATE course SET name = ? WHERE id = ?";
@@ -89,6 +99,7 @@ public class AdminDAOImpl implements IAdminDAO {
         return false;
     }
 
+    //cập nhật thời lượng
     @Override
     public boolean updateCourseDuration(int courseid, int newDuration) {
         String query = "UPDATE course SET duration = ? WHERE id = ?";
@@ -104,6 +115,7 @@ public class AdminDAOImpl implements IAdminDAO {
         return false;
     }
 
+    //cập nhật tên giảng viên
     @Override
     public boolean updateCourseInstructor(int courseid, String newInstructor) {
         String query = "UPDATE course SET instructor = ? WHERE id = ?";
@@ -119,6 +131,7 @@ public class AdminDAOImpl implements IAdminDAO {
         return false;
     }
 
+    // tìm kiếm gần đúng theo tên
     @Override
     public List<Course> searchCourses(String key) {
         String query = "SELECT * FROM course WHERE name ilike ?";
@@ -144,6 +157,7 @@ public class AdminDAOImpl implements IAdminDAO {
         return null;
     }
 
+    // kiểm tra xem id khóa học có tồn tại hay không
     @Override
     public boolean existsCourseById(int courseId) {
         String query = "SELECT count(*) FROM course WHERE id=?";
@@ -162,6 +176,7 @@ public class AdminDAOImpl implements IAdminDAO {
         return false;
     }
 
+    //xóa kháo học
     @Override
     public boolean deleteCourse(int courseId) {
         String query = "DELETE FROM course WHERE id=?";
@@ -177,6 +192,7 @@ public class AdminDAOImpl implements IAdminDAO {
         return false;
     }
 
+    // ràng buộc để không cho xóa nếu khóa học đang có sinh viên đăng ký
     @Override
     public boolean isCourseInUse(int courseId) {
         String query = "SELECT count(*) FROM enrollment WHERE course_id = ?";
@@ -193,7 +209,10 @@ public class AdminDAOImpl implements IAdminDAO {
         }
         return false;
     }
+    //endregion
 
+    //region student management (quản lý sinh viên)
+    // lấy danh sách hoọc viên
     @Override
     public List<Student> getAllStudents() {
         String query = "SELECT * FROM student";
@@ -202,6 +221,7 @@ public class AdminDAOImpl implements IAdminDAO {
              PreparedStatement prest = conn.prepareStatement(query)) {
             ResultSet rs = prest.executeQuery();
             while (rs.next()) {
+                //map rs ra Student bằng StudentMapper
                 students.add(StudentMapper.toStudent(rs));
             }
 
@@ -213,9 +233,12 @@ public class AdminDAOImpl implements IAdminDAO {
         return null;
     }
 
+    //thêm học viên mới
     @Override
     public boolean createStudent(String InputName, Date InputDOB, String InputEmail, Boolean InputGender, String InputPhoneNumber, String InputPassword) {
+        // mã hóa mật khẩu bằng bcrypt trước khi lưu xuống db
         String hashpw = BCrypt.hashpw(InputPassword, BCrypt.gensalt());
+        // ép kiểu gender về bit (0/1) cho phù hợp postgresql
         String query = "INSERT INTO student(name, dob, email, gender, phone, password) VALUES (?,?,?,?::bit,?,?)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
@@ -234,6 +257,7 @@ public class AdminDAOImpl implements IAdminDAO {
         return false;
     }
 
+    // kiểm tra email trùng lặp
     @Override
     public boolean existsByEmail(String InputEmail) {
         String query = "SELECT count(*) AS cnt FROM student WHERE email = ?";
@@ -255,19 +279,24 @@ public class AdminDAOImpl implements IAdminDAO {
         return false;
     }
 
+    // cập nhật thông tin học viên
     @Override
     public boolean updateStudentField(int studentId, String fieldName, String newValue) {
         String column = "";
         String cast = "";
+
+        // mapping tên trường từ java sang db để tránh lỗi
         switch (fieldName) {
             case "name": column = "name"; break;
             case "dob":
                 column = "dob";
+                //ép kiểu date
                 cast = "::date";
                 break;
             case "email": column = "email"; break;
             case "gender":
                 column = "gender";
+                //ép kiểu bit
                 cast = "::bit";
                 break;
             case "phone": column = "phone"; break;
@@ -287,10 +316,13 @@ public class AdminDAOImpl implements IAdminDAO {
         return false;
     }
 
+    // tìm kiếm học viên trả ra list student
     @Override
     public List<Student> searchStudents(String key, String searchBy) {
         List<Student> students = new ArrayList<>();
         String column = "";
+
+        // xác định cột muốn tìm kiếm
         if (searchBy.equalsIgnoreCase("name")) {
             column = "name";
         } else if (searchBy.equalsIgnoreCase("email")) {
@@ -315,6 +347,7 @@ public class AdminDAOImpl implements IAdminDAO {
         return null;
     }
 
+    //xóa học viên
     @Override
     public boolean deleteStudent(int studentId) {
         String query = "DELETE FROM student WHERE id=?";
@@ -330,6 +363,7 @@ public class AdminDAOImpl implements IAdminDAO {
         return false;
     }
 
+    // kiểm tra sinh viên có lịch sử đăng ký học hay chưa để chặn xóa
     @Override
     public boolean hasEnrollments(int studentId) {
         String query = "SELECT COUNT(*) FROM enrollment WHERE student_id = ?";
@@ -347,6 +381,7 @@ public class AdminDAOImpl implements IAdminDAO {
         return false;
     }
 
+    //kiểm tra sinh viên có tồn tại không đẻ xóa hoặc cập nhật
     @Override
     public boolean existsStudentById(int studentId) {
         String query = "SELECT count(*) FROM student WHERE id=?";
@@ -364,10 +399,15 @@ public class AdminDAOImpl implements IAdminDAO {
         }
         return false;
     }
+    //endregion
 
+    //region enrollment management (quản lý đăng ký)
+    // lấy list enrollment detil có chứ tên khóa và tên học viên thay cho id khóa và học viên
     @Override
     public List<EnrollmentDetailDTO> getEnrollmentsByCourse(int courseId) {
         List<EnrollmentDetailDTO> list = new ArrayList<>();
+        // join 3 bảng enrollment, student, course để lấy thông tin chi tiết
+        // chỉ lấy những đơn đã được duyệt status = confirm
          String query = "SELECT e.id, s.name, c.name as course_name, e.registered_at, e.status " +
                  "FROM enrollment e " +
                  "JOIN student s ON e.student_id = s.id " +
@@ -394,8 +434,10 @@ public class AdminDAOImpl implements IAdminDAO {
          return null;
     }
 
+    // cập nhật trạng thái đơn confirm hoặc denied
     @Override
     public boolean updateEnrollmentStatus(int enrollmentId, String action) {
+        // ép kiểu string sang enum course_status trong postgresql
         String query = "UPDATE enrollment SET status = ?::course_status WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query);) {
@@ -410,6 +452,7 @@ public class AdminDAOImpl implements IAdminDAO {
         return false;
     }
 
+    // lấy danh sách sinh viên đang chờ duyệt status = waiting
     @Override
     public List<EnrollmentDetailDTO> getPendingEnrollments(int enrollmentId) {
         List<EnrollmentDetailDTO> list = new ArrayList<>();
@@ -439,6 +482,7 @@ public class AdminDAOImpl implements IAdminDAO {
         return null;
     }
 
+    // xóa enrollment khỏi db
     @Override
     public boolean deleteEnrollment(int enrollmentId) {
         String query = "DELETE FROM enrollment WHERE id = ? and status = 'CONFIRM'";
@@ -454,9 +498,13 @@ public class AdminDAOImpl implements IAdminDAO {
         }
         return false;
     }
+    //endregion
 
+    //region statistics (thống kê báo cáo)
+    // lấy ra tổng kháo và tổng học viên và lưu vào map
     @Override
     public Map<String ,Integer> getSystemStatistics() {
+        // dùng subquery để đếm tổng số lượng khóa học và sinh viên trong 1 lần gọi
         String query = "SELECT\n" +
                 "(SELECT COUNT(id) FROM course) AS total_course,\n" +
                 "    (SELECT COUNT(id) FROM student) AS total_student;";
@@ -476,8 +524,10 @@ public class AdminDAOImpl implements IAdminDAO {
         return null;
     }
 
+    //lấy ra map chứ tên khóa học và sô học viên của khóa đó
     @Override
     public Map<String ,Integer> getStudentCountByCourse() {
+        // group by để đếm số lượng sinh viên theo từng khóa học
         String query ="select c.name, count(e.student_id)\n" +
                 "from course as c\n" +
                 "left join enrollment e on c.id = e.course_id and e.status='CONFIRM'\n" +
@@ -496,4 +546,5 @@ public class AdminDAOImpl implements IAdminDAO {
         }
         return null;
     }
+    //endregion
 }

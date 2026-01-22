@@ -5,11 +5,11 @@ import business.IAdminServices;
 import java.util.Map;
 import java.util.Scanner;
 
-public class AnalyzeMenu {
+public class StatisticsMenu {
     private Scanner sc ;
     private IAdminServices services;
 
-    public AnalyzeMenu(Scanner sc, IAdminServices services) {
+    public StatisticsMenu(Scanner sc, IAdminServices services) {
         this.sc = sc;
         this.services = services;
     }
