@@ -7,7 +7,9 @@ import model.Course;
 import model.Student;
 import model.dto.EnrollmentDetailDTO;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 
@@ -83,5 +85,38 @@ public class StudentServicesImpl implements IStudentServices {
             return false;
         }
         return dao.changePassword(studentID, newPass);
+    }
+
+    @Override
+    public List<Course> getSuggestedCourse(int studentID) {
+        List<Course> result =  new ArrayList<>();
+
+        List<Course> allCourses = dao.listCourses();
+        List<EnrollmentDetailDTO> history = dao.getHistory(studentID);
+
+        if (history.isEmpty()) {
+            String name = "Lập trình C cơ bản";
+            int duration = 30;
+            String instructor = "Thầy Sơn";
+            Date created_at = new Date("2024-12-01");
+            result.add(new Course(name, duration, instructor, created_at));
+        }
+
+        List<String> AttendCourseName = new ArrayList<>();
+        history.forEach(enrollment -> {
+            AttendCourseName.add(enrollment.getCourseName());
+        });
+        history.sort((o1, o2) -> o1.getRegisteredAt().compareTo(o2.getRegisteredAt()));
+        String lastCourse = history.get(history.size() - 1).getCourseName();
+        String key[] = lastCourse.toLowerCase().replaceAll("[^a-zA-Z0-9à-ỹ\\s]", " ").trim().split("\\s+");
+
+        allCourses.forEach(course -> {
+            for (String keyword : key) {
+                if(course.getName().toLowerCase().contains(keyword) && !AttendCourseName.contains(course.getName())) {
+                    result.add(course);
+                }
+            }
+        });
+        return result;
     }
 }

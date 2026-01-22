@@ -15,8 +15,9 @@ public class ReviewCourseMenu {
         this.services = services;
     }
 
-    public void showMenu(){
+    public void showMenu(int id){
         while(true){
+            showSuggestCourse(id);
             System.out.println("═══════════════════════════════════");
             System.out.println("1. Xem danh sách hóa học đang có");
             System.out.println("2. Tìm kiếm khóa học ");
@@ -75,5 +76,18 @@ public class ReviewCourseMenu {
         }
         System.out.println("\nẤn Enter để quay lại...");
         sc.nextLine();
+    }
+
+    private void showSuggestCourse(int studentId) {
+        List<Course> list = services.getSuggestedCourse(studentId);
+        System.out.println("┌─────────────────────────────────────────────────────────────────┐");
+        System.out.println("│                     ĐỀ XUẤT KHÓA HỌC PHÙ HỢP                    │");
+        System.out.println("├────────────────────────────────┬─────────────────┬──────────────┤");
+        System.out.printf("│ %-30s │ %-15s │ %-12s │\n", "Tên khóa", "Giảng viên", "Thời lượng");
+        System.out.println("├────────────────────────────────┼─────────────────┼──────────────┤");
+        for (Course c : list) {
+            System.out.printf("│ %-30s │ %-15s │ %-12s │\n", c.getName(), c.getInstructor(), c.getDuration());
+        }
+        System.out.println("└────────────────────────────────┴─────────────────┴──────────────┘");
     }
 }

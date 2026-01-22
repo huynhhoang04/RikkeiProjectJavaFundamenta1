@@ -30,7 +30,7 @@ public class StudentMenuView {
             switch (sc.nextLine()){
                 case "1":
                     ReviewCourseMenu rcm = new ReviewCourseMenu(sc,services);
-                    rcm.showMenu();
+                    rcm.showMenu(id);
                     break;
                 case "2":
                     handleRegisterCourse(id);

@@ -16,4 +16,6 @@ public interface IStudentServices
     List<EnrollmentDetailDTO> sortEnrollment(int studentId, String sortBy, String sortOrder);
     boolean cancelEnrollment(int studentID, int enrollmentID);
     boolean changePassword(int studentID, String email, String oldPass, String newPass);
+
+    List<Course> getSuggestedCourse(int studentID);
 }
