@@ -9,7 +9,6 @@ import model.dto.EnrollmentDetailDTO;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 
@@ -22,39 +21,39 @@ public class StudentServicesImpl implements IStudentServices {
 
     @Override
     public Student login(String email, String password) {
-        Student student = dao.checkStudent(email, password);
+        Student student = dao.login(email, password);
         return student;
     }
 
     @Override
-    public List<Course> showListCourses() {
-        return dao.listCourses();
+    public List<Course> getAllCourses() {
+        return dao.getAllCourses();
     }
 
     @Override
-    public List<Course> findCourse(String key) {
-        return dao.findCourse(key);
+    public List<Course> searchCourses(String key) {
+        return dao.searchCourses(key);
     }
 
     @Override
     public boolean registerCourse(int studentID, int courseID) {
-        if (!dao.checkCourseExist(courseID)) {
+        if (!dao.existsCourseById(courseID)) {
             return false;
         }
-        if (!dao.checkEnrollmentExist(studentID, courseID)) {
+        if (!dao.isAlreadyEnrolled(studentID, courseID)) {
             return false;
         }
-        return dao.registerCourse(studentID, courseID);
+        return dao.createEnrollment(studentID, courseID);
     }
 
     @Override
-    public List<EnrollmentDetailDTO> getHistory(int studentId) {
-        return dao.getHistory(studentId);
+    public List<EnrollmentDetailDTO> getEnrollmentHistory(int studentId) {
+        return dao.getEnrollmentHistory(studentId);
     }
 
     @Override
-    public List<EnrollmentDetailDTO> sortEnrollment(int studentId, String sortBy, String sortOrder) {
-        List<EnrollmentDetailDTO> list = dao.getHistory(studentId);
+    public List<EnrollmentDetailDTO> getSortedHistory(int studentId, String sortBy, String sortOrder) {
+        List<EnrollmentDetailDTO> list = dao.getEnrollmentHistory(studentId);
         if (list.isEmpty()) return list;
         if (sortBy.equalsIgnoreCase("name")) {
             list.sort((o1, o2) -> o1.getCourseName().compareToIgnoreCase(o2.getCourseName()));
@@ -69,37 +68,36 @@ public class StudentServicesImpl implements IStudentServices {
 
     @Override
     public boolean cancelEnrollment(int studentID, int enrollmentID) {
-        boolean canCancel = dao.checkCheckCancelable(studentID, enrollmentID);
+        boolean canCancel = dao.isEnrollmentCancellable(studentID, enrollmentID);
         if (!canCancel) {
             return false;
         }
-        return dao.cancelEnrollment(enrollmentID);
+        return dao.cancelEnrollmentRequest(enrollmentID);
     }
 
     @Override
     public boolean changePassword(int studentID, String email, String oldPass, String newPass) {
-        if (!dao.verification(studentID, oldPass, email)) {
+        if (!dao.verifyCredentials(studentID, oldPass, email)) {
             return false;
         }
         if (oldPass.equals(newPass)) {
             return false;
         }
-        return dao.changePassword(studentID, newPass);
+        return dao.updatePassword(studentID, newPass);
     }
 
     @Override
     public List<Course> getSuggestedCourse(int studentID) {
         List<Course> result =  new ArrayList<>();
 
-        List<Course> allCourses = dao.listCourses();
-        List<EnrollmentDetailDTO> history = dao.getHistory(studentID);
+        List<Course> allCourses = dao.getAllCourses();
+        List<EnrollmentDetailDTO> history = dao.getEnrollmentHistory(studentID);
+        Course topCourse = dao.getTopCourse();
 
         if (history.isEmpty()) {
-            String name = "Lập trình C cơ bản";
-            int duration = 30;
-            String instructor = "Thầy Sơn";
-            Date created_at = new Date("2024-12-01");
-            result.add(new Course(name, duration, instructor, created_at));
+            if (topCourse == null) { result.add(topCourse); }
+            else {result.add(allCourses.get(0));}
+            return result;
         }
 
         List<String> AttendCourseName = new ArrayList<>();
@@ -117,6 +115,7 @@ public class StudentServicesImpl implements IStudentServices {
                 }
             }
         });
+        if (result.isEmpty()) {result.add(topCourse);}
         return result;
     }
 }

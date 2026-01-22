@@ -1,6 +1,6 @@
 package presentation.admin;
 
-import business.IAdminSevices;
+import business.IAdminServices;
 import model.Student;
 
 import java.text.SimpleDateFormat;
@@ -14,9 +14,9 @@ import static util.checkPhoneValid.checkPhone;
 
 public class StudentManagementMenu {
     private Scanner sc ;
-    private IAdminSevices services;
+    private IAdminServices services;
 
-    public StudentManagementMenu(Scanner sc, IAdminSevices services) {
+    public StudentManagementMenu(Scanner sc, IAdminServices services) {
         this.sc = sc;
         this.services = services;
     }
@@ -94,7 +94,7 @@ public class StudentManagementMenu {
                 System.out.println("⚠ ID phải là số nguyên!");
                 continue;
             }
-            if (services.checkStudent(Integer.parseInt(input))) {
+            if (services.existsStudentById(Integer.parseInt(input))) {
                 return Integer.parseInt(input);
             }
             else {
@@ -106,7 +106,7 @@ public class StudentManagementMenu {
 
     public void handleShowListStudent() {
         System.out.println("𝄜 DANH SÁCH HỌC VIÊN ");
-        List<Student> list = services.showListStudent();
+        List<Student> list = services.getAllStudents();
         printStudentList(list);
         System.out.println("Ấn Enter để quay lại...");
         sc.nextLine();
@@ -178,7 +178,7 @@ public class StudentManagementMenu {
 
                 System.out.println("═══════════════════════════════════");
 
-                boolean success = services.addStudent(name, dob, email, gender, phone, pass);
+                boolean success = services.createStudent(name, dob, email, gender, phone, pass);
 
                 if (success) {
                     System.out.println("✔ Thêm học viên thành công!");
@@ -245,7 +245,7 @@ public class StudentManagementMenu {
                 }
             }
 
-            boolean success = services.editStudent(id, fieldName, newValue);
+            boolean success = services.updateStudentField(id, fieldName, newValue);
             if (success) {
                 System.out.println("✔ Cập nhật thành công!");
             } else {
@@ -291,7 +291,7 @@ public class StudentManagementMenu {
                     System.out.println("⚠ Lựa chọn không hợp lệ!");
                     continue;
             }
-            List<Student> result = services.sortListStudent(sortBy, sortOrder);
+            List<Student> result = services.getSortedStudents(sortBy, sortOrder);
             if (result.isEmpty()) {
                 System.out.println("⚠ Danh sách trống!");
             } else {
@@ -356,7 +356,7 @@ public class StudentManagementMenu {
                 System.out.println("⚠  Từ khóa không được để trống!");
                 continue;
             }
-            List<Student> result = services.findStudent(key, searchBy);
+            List<Student> result = services.searchStudents(key, searchBy);
             if (result.isEmpty()) {
                 System.out.println("⚠  Không tìm thấy học viên nào phù hợp.");
             } else {

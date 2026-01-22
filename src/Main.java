@@ -1,9 +1,9 @@
 
 import java.util.*;
 
-import business.IAdminSevices;
+import business.IAdminServices;
 import business.IStudentServices;
-import business.impl.AdminSevicesImpl;
+import business.impl.AdminServicesImpl;
 import business.impl.StudentServicesImpl;
 import dao.IAdminDAO;
 import dao.IStudentDAO;
@@ -15,7 +15,7 @@ public class Main {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         IAdminDAO adminDAO = new AdminDAOImpl();
-        IAdminSevices adminSevices = new AdminSevicesImpl(adminDAO);
+        IAdminServices adminSevices = new AdminServicesImpl(adminDAO);
         AdminLoginView adminLogin = new AdminLoginView(sc, adminSevices);
 
         IStudentDAO studentDAO = new StudentDAOImpl();

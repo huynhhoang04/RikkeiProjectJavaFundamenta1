@@ -1,6 +1,6 @@
 package presentation;
 
-import business.IAdminSevices;
+import business.IAdminServices;
 import presentation.admin.AnalyzeMenu;
 import presentation.admin.CourseManagementMenu;
 import presentation.admin.EnrollmentManagementMenu;
@@ -11,9 +11,9 @@ import java.util.Scanner;
 public class AdminMenuView {
 
     private Scanner sc ;
-    private IAdminSevices services;
+    private IAdminServices services;
 
-    public AdminMenuView(Scanner sc, IAdminSevices services) {
+    public AdminMenuView(Scanner sc, IAdminServices services) {
         this.sc = sc;
         this.services = services;
     }

@@ -18,7 +18,7 @@ public class AdminDAOImpl implements IAdminDAO {
 
 
     @Override
-    public Admin checkAdmin(String InputUsername, String InputPassword) {
+    public Admin login(String InputUsername, String InputPassword) {
         String query = "SELECT id, username, password FROM admin WHERE username=? ";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
@@ -40,7 +40,7 @@ public class AdminDAOImpl implements IAdminDAO {
     }
 
     @Override
-    public List<Course> listCourse() {
+    public List<Course> getAllCourses() {
         String query = "SELECT * FROM course";
         List<Course> courses = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
@@ -58,7 +58,7 @@ public class AdminDAOImpl implements IAdminDAO {
     }
 
     @Override
-    public boolean addCourse(String InputName, int InputDuration,  String InputInstructor) {
+    public boolean createCourse(String InputName, int InputDuration, String InputInstructor) {
         String query = "INSERT INTO course(name, duration, instructor) VALUES (?,?,?)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
@@ -120,7 +120,7 @@ public class AdminDAOImpl implements IAdminDAO {
     }
 
     @Override
-    public List<Course> findCourse(String key) {
+    public List<Course> searchCourses(String key) {
         String query = "SELECT * FROM course WHERE name ilike ?";
         List<Course> courses = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
@@ -145,7 +145,7 @@ public class AdminDAOImpl implements IAdminDAO {
     }
 
     @Override
-    public boolean checkCourse(int courseId) {
+    public boolean existsCourseById(int courseId) {
         String query = "SELECT count(*) FROM course WHERE id=?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
@@ -178,7 +178,7 @@ public class AdminDAOImpl implements IAdminDAO {
     }
 
     @Override
-    public boolean checkCourseHasStudent(int courseId) {
+    public boolean isCourseInUse(int courseId) {
         String query = "SELECT count(*) FROM enrollment WHERE course_id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
@@ -195,7 +195,7 @@ public class AdminDAOImpl implements IAdminDAO {
     }
 
     @Override
-    public List<Student> listStudent() {
+    public List<Student> getAllStudents() {
         String query = "SELECT * FROM student";
         List<Student> students = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
@@ -214,7 +214,7 @@ public class AdminDAOImpl implements IAdminDAO {
     }
 
     @Override
-    public boolean addStudent(String InputName, Date InputDOB, String InputEmail, Boolean InputGender, String InputPhoneNumber, String InputPassword) {
+    public boolean createStudent(String InputName, Date InputDOB, String InputEmail, Boolean InputGender, String InputPhoneNumber, String InputPassword) {
         String hashpw = BCrypt.hashpw(InputPassword, BCrypt.gensalt());
         String query = "INSERT INTO student(name, dob, email, gender, phone, password) VALUES (?,?,?,?::bit,?,?)";
         try (Connection conn = DBConnection.getConnection();
@@ -235,7 +235,7 @@ public class AdminDAOImpl implements IAdminDAO {
     }
 
     @Override
-    public boolean checkEmailExists(String InputEmail) {
+    public boolean existsByEmail(String InputEmail) {
         String query = "SELECT count(*) AS cnt FROM student WHERE email = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)){
@@ -256,7 +256,7 @@ public class AdminDAOImpl implements IAdminDAO {
     }
 
     @Override
-    public boolean editStudent(int studentId, String fieldName, String newValue) {
+    public boolean updateStudentField(int studentId, String fieldName, String newValue) {
         String column = "";
         String cast = "";
         switch (fieldName) {
@@ -288,7 +288,7 @@ public class AdminDAOImpl implements IAdminDAO {
     }
 
     @Override
-    public List<Student> findStudent(String key, String searchBy) {
+    public List<Student> searchStudents(String key, String searchBy) {
         List<Student> students = new ArrayList<>();
         String column = "";
         if (searchBy.equalsIgnoreCase("name")) {
@@ -331,7 +331,7 @@ public class AdminDAOImpl implements IAdminDAO {
     }
 
     @Override
-    public boolean checkStudentAttend(int studentId) {
+    public boolean hasEnrollments(int studentId) {
         String query = "SELECT COUNT(*) FROM enrollment WHERE student_id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
@@ -348,7 +348,7 @@ public class AdminDAOImpl implements IAdminDAO {
     }
 
     @Override
-    public boolean checkStudentExists(int studentId) {
+    public boolean existsStudentById(int studentId) {
         String query = "SELECT count(*) FROM student WHERE id=?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
@@ -366,7 +366,7 @@ public class AdminDAOImpl implements IAdminDAO {
     }
 
     @Override
-    public List<EnrollmentDetailDTO> listStudentByCourse(int courseId) {
+    public List<EnrollmentDetailDTO> getEnrollmentsByCourse(int courseId) {
         List<EnrollmentDetailDTO> list = new ArrayList<>();
          String query = "SELECT e.id, s.name, c.name as course_name, e.registered_at, e.status " +
                  "FROM enrollment e " +
@@ -395,7 +395,7 @@ public class AdminDAOImpl implements IAdminDAO {
     }
 
     @Override
-    public boolean clarifyEnrollment(int enrollmentId, String action) {
+    public boolean updateEnrollmentStatus(int enrollmentId, String action) {
         String query = "UPDATE enrollment SET status = ?::course_status WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query);) {
@@ -456,7 +456,7 @@ public class AdminDAOImpl implements IAdminDAO {
     }
 
     @Override
-    public Map<String ,Integer> totalCourseAndStudent() {
+    public Map<String ,Integer> getSystemStatistics() {
         String query = "SELECT\n" +
                 "(SELECT COUNT(id) FROM course) AS total_course,\n" +
                 "    (SELECT COUNT(id) FROM student) AS total_student;";
@@ -477,7 +477,7 @@ public class AdminDAOImpl implements IAdminDAO {
     }
 
     @Override
-    public Map<String ,Integer> analyzeTotalStudentByCourse() {
+    public Map<String ,Integer> getStudentCountByCourse() {
         String query ="select c.name, count(e.student_id)\n" +
                 "from course as c\n" +
                 "left join enrollment e on c.id = e.course_id and e.status='CONFIRM'\n" +

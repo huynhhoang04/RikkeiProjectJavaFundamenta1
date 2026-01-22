@@ -1,6 +1,6 @@
 package presentation.admin;
 
-import business.IAdminSevices;
+import business.IAdminServices;
 import model.Course;
 
 import java.util.List;
@@ -8,9 +8,9 @@ import java.util.Scanner;
 
 public class CourseManagementMenu {
     private Scanner sc ;
-    private IAdminSevices services;
+    private IAdminServices services;
 
-    public CourseManagementMenu(Scanner sc, IAdminSevices services) {
+    public CourseManagementMenu(Scanner sc, IAdminServices services) {
         this.sc = sc;
         this.services = services;
     }
@@ -85,7 +85,7 @@ public class CourseManagementMenu {
                 System.out.println("⚠ ID phải là số nguyên!");
                 continue;
             }
-            if (services.checkCourse(Integer.parseInt(input))) {
+            if (services.existsCourseById(Integer.parseInt(input))) {
                 return Integer.parseInt(input);
             }
             else {
@@ -151,7 +151,7 @@ public class CourseManagementMenu {
 
     public void handleShowListCourses() {
         System.out.println("𝄜 DANH SÁCH KHÓA HỌC");
-        List<Course> list = services.showListCourse();
+        List<Course> list = services.getAllCourses();
         if (list.isEmpty()) {
             System.out.println("⚠ Hệ thống chưa có khóa học nào!");
         } else {
@@ -195,7 +195,7 @@ public class CourseManagementMenu {
                     System.out.println("⚠ Lựa chọn không hợp lệ!");
                     continue;
             }
-            List<Course> result = services.sortListCourse(sortBy, sortOrder);
+            List<Course> result = services.getSortedCourses(sortBy, sortOrder);
             if (result.isEmpty()) {
                 System.out.println("⚠ Danh sách trống.");
             } else {
@@ -217,7 +217,7 @@ public class CourseManagementMenu {
 
             if (key.equalsIgnoreCase("exit")) return;
 
-            List<Course> result = services.findCourseByKey(key);
+            List<Course> result = services.searchCourses(key);
 
             if (result.isEmpty()) {
                 System.out.println("⚠ Không tìm thấy khóa học nào chứa: \"" + key + "\"");
@@ -295,7 +295,7 @@ public class CourseManagementMenu {
                     continue;
                 }
                 System.out.println("═══════════════════════════════════");
-                boolean isSuccess = services.addCourse(name, duration, instructor);
+                boolean isSuccess = services.createCourse(name, duration, instructor);
                 if (isSuccess) {
                     System.out.println("✔ Thêm khóa học thành công!");
                     System.out.print("➜ Bạn có muốn thêm khóa khác không? (y/n): ");

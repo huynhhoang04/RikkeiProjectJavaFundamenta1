@@ -1,15 +1,15 @@
 package presentation.admin;
 
-import business.IAdminSevices;
+import business.IAdminServices;
 
 import java.util.Map;
 import java.util.Scanner;
 
 public class AnalyzeMenu {
     private Scanner sc ;
-    private IAdminSevices services;
+    private IAdminServices services;
 
-    public AnalyzeMenu(Scanner sc, IAdminSevices services) {
+    public AnalyzeMenu(Scanner sc, IAdminServices services) {
         this.sc = sc;
         this.services = services;
     }
@@ -66,7 +66,7 @@ public class AnalyzeMenu {
     }
 
     private void handleTotalStats() {
-        Map<String, Integer> stats = services.showTotalCoursesAndStudents();
+        Map<String, Integer> stats = services.getSystemStatistics();
         System.out.println("══════════════════════════════════════════");
         System.out.println("∑ TỔNG QUAN HỆ THỐNG ");
         System.out.println("📖 Tổng số khóa học : " + stats.getOrDefault("courses", 0));
@@ -78,7 +78,7 @@ public class AnalyzeMenu {
 
     private void handleAllCoursesStats() {
         System.out.println("𝄜 SỐ LƯỢNG HỌC VIÊN THEO KHÓA ");
-        Map<String, Integer> data = services.showTotalStudentsByCourse();
+        Map<String, Integer> data = services.getStudentCountByCourse();
         printTable(data);
         System.out.println("Ấn Enter để quay lại...");
         sc.nextLine();
@@ -86,7 +86,7 @@ public class AnalyzeMenu {
 
     private void handleTop5Stats() {
         System.out.println("♕ TOP 5 KHÓA HỌC ĐÔNG NHẤT ");
-        Map<String, Integer> data = services.Top5CourseWithStudents();
+        Map<String, Integer> data = services.getTop5PopularCourses();
         printTable(data);
         System.out.println("Ấn Enter để quay lại...");
         sc.nextLine();
@@ -94,7 +94,7 @@ public class AnalyzeMenu {
 
     private void handleThresholdStats() {
         System.out.println("𝇕 CÁC KHÓA HỌC ĐẠT TRÊN 10 HỌC VIÊN ");
-        Map<String, Integer> data = services.CourseWithMoreThan10Students();
+        Map<String, Integer> data = services.getCoursesWithHighEnrollment();
         printTable(data);
         System.out.println("Ấn Enter để quay lại...");
         sc.nextLine();

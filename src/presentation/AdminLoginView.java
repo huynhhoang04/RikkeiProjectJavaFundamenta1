@@ -1,15 +1,15 @@
 package presentation;
 
-import business.IAdminSevices;
+import business.IAdminServices;
 import model.Admin;
 
 import java.util.Scanner;
 
 public class AdminLoginView {
     private Scanner sc ;
-    private IAdminSevices services;
+    private IAdminServices services;
 
-    public AdminLoginView(Scanner sc, IAdminSevices services) {
+    public AdminLoginView(Scanner sc, IAdminServices services) {
         this.sc = sc;
         this.services = services;
     }

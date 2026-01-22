@@ -1,6 +1,6 @@
 package business.impl;
 
-import business.IAdminSevices;
+import business.IAdminServices;
 import dao.IAdminDAO;
 import model.Admin;
 import model.Course;
@@ -10,33 +10,33 @@ import model.dto.EnrollmentDetailDTO;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class AdminSevicesImpl implements IAdminSevices {
+public class AdminServicesImpl implements IAdminServices {
     private final IAdminDAO dao;
 
-    public AdminSevicesImpl(IAdminDAO dao) {
+    public AdminServicesImpl(IAdminDAO dao) {
         this.dao = dao;
     }
 
     @Override
     public Admin login(String username, String password) {
-        Admin admin = dao.checkAdmin(username, password);
+        Admin admin = dao.login(username, password);
         return admin;
     }
 
     @Override
-    public List<Course> showListCourse() {
-        return dao.listCourse();
+    public List<Course> getAllCourses() {
+        return dao.getAllCourses();
     }
 
     @Override
-    public boolean addCourse(String name, int duration, String instructor) {
+    public boolean createCourse(String name, int duration, String instructor) {
         if (duration <= 0) return false;
-        return dao.addCourse(name, duration, instructor);
+        return dao.createCourse(name, duration, instructor);
     }
 
     @Override
-    public boolean checkCourse(int courseId) {
-        return dao.checkCourse(courseId);
+    public boolean existsCourseById(int courseId) {
+        return dao.existsCourseById(courseId);
     }
 
     @Override
@@ -55,13 +55,13 @@ public class AdminSevicesImpl implements IAdminSevices {
     }
 
     @Override
-    public List<Course> findCourseByKey(String key) {
-        return dao.findCourse(key);
+    public List<Course> searchCourses(String key) {
+        return dao.searchCourses(key);
     }
 
     @Override
-    public List<Course> sortListCourse(String sortBy, String sortOrder) {
-        List<Course> list = dao.listCourse();
+    public List<Course> getSortedCourses(String sortBy, String sortOrder) {
+        List<Course> list = dao.getAllCourses();
         if (list.isEmpty()) {
             return list;
         }
@@ -82,47 +82,47 @@ public class AdminSevicesImpl implements IAdminSevices {
 
     @Override
     public boolean deleteCourse(int id) {
-        if (dao.checkCourseHasStudent(id)) {
+        if (dao.isCourseInUse(id)) {
             return false;
         }
         return dao.deleteCourse(id);
     }
 
     @Override
-    public List<Student> showListStudent() {
-        return dao.listStudent();
+    public List<Student> getAllStudents() {
+        return dao.getAllStudents();
     }
 
     @Override
-    public boolean addStudent(String name, Date dob, String email, boolean gender, String phone, String password)  {
-        if (dao.checkEmailExists(email)) {
+    public boolean createStudent(String name, Date dob, String email, boolean gender, String phone, String password)  {
+        if (dao.existsByEmail(email)) {
             return false;
         }
 
-        return dao.addStudent(name, dob, email, gender, phone, password);
+        return dao.createStudent(name, dob, email, gender, phone, password);
     }
 
     @Override
-    public boolean checkStudent(int id) {
-        return dao.checkStudentExists(id);
+    public boolean existsStudentById(int id) {
+        return dao.existsStudentById(id);
     }
 
     @Override
-    public boolean editStudent(int id, String fieldName, String newValue)  {
-        if (fieldName.equalsIgnoreCase("email") && dao.checkEmailExists(newValue)) {
+    public boolean updateStudentField(int id, String fieldName, String newValue)  {
+        if (fieldName.equalsIgnoreCase("email") && dao.existsByEmail(newValue)) {
             return false;
         }
-        return dao.editStudent(id, fieldName, newValue);
+        return dao.updateStudentField(id, fieldName, newValue);
     }
 
     @Override
-    public List<Student> findStudent(String key, String searchBy) {
-        return dao.findStudent(key, searchBy);
+    public List<Student> searchStudents(String key, String searchBy) {
+        return dao.searchStudents(key, searchBy);
     }
 
     @Override
-    public List<Student> sortListStudent(String sortBy, String sortOrder) {
-        List<Student> list = dao.listStudent();
+    public List<Student> getSortedStudents(String sortBy, String sortOrder) {
+        List<Student> list = dao.getAllStudents();
         if (list.isEmpty()) {
             return list;
         }
@@ -144,23 +144,23 @@ public class AdminSevicesImpl implements IAdminSevices {
 
     @Override
     public boolean deleteStudent(int id) {
-        if (dao.checkStudentAttend(id)) {
+        if (dao.hasEnrollments(id)) {
             return false;
         }
         return dao.deleteStudent(id);
     }
 
     @Override
-    public List<EnrollmentDetailDTO> getCourseEnrollments(int courseId) {
-        if(!dao.checkCourse(courseId)){
+    public List<EnrollmentDetailDTO> getEnrollmentsByCourse(int courseId) {
+        if(!dao.existsCourseById(courseId)){
             return null;
         }
-        return dao.listStudentByCourse(courseId);
+        return dao.getEnrollmentsByCourse(courseId);
     }
 
     @Override
     public List<EnrollmentDetailDTO> getPendingEnrollments(int courseId) {
-        if(!dao.checkCourse(courseId)){
+        if(!dao.existsCourseById(courseId)){
             return null;
         }
         return dao.getPendingEnrollments(courseId);
@@ -168,12 +168,12 @@ public class AdminSevicesImpl implements IAdminSevices {
 
     @Override
     public boolean approveEnrollment(int enrollmentId) {
-        return dao.clarifyEnrollment(enrollmentId, "CONFIRM");
+        return dao.updateEnrollmentStatus(enrollmentId, "CONFIRM");
     }
 
     @Override
     public boolean denyEnrollment(int enrollmentId) {
-        return dao.clarifyEnrollment(enrollmentId, "DENIED");
+        return dao.updateEnrollmentStatus(enrollmentId, "DENIED");
     }
 
     @Override
@@ -182,18 +182,18 @@ public class AdminSevicesImpl implements IAdminSevices {
     }
 
     @Override
-    public Map<String, Integer> showTotalCoursesAndStudents() {
-        return dao.totalCourseAndStudent();
+    public Map<String, Integer> getSystemStatistics() {
+        return dao.getSystemStatistics();
     }
 
     @Override
-    public Map<String, Integer> showTotalStudentsByCourse() {
-        return dao.analyzeTotalStudentByCourse();
+    public Map<String, Integer> getStudentCountByCourse() {
+        return dao.getStudentCountByCourse();
     }
 
     @Override
-    public Map<String, Integer> Top5CourseWithStudents() {
-        Map<String, Integer> data = dao.analyzeTotalStudentByCourse();
+    public Map<String, Integer> getTop5PopularCourses() {
+        Map<String, Integer> data = dao.getStudentCountByCourse();
         return data.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .limit(5)
@@ -201,8 +201,8 @@ public class AdminSevicesImpl implements IAdminSevices {
     }
 
     @Override
-    public Map<String, Integer> CourseWithMoreThan10Students() {
-        Map<String, Integer> data = dao.analyzeTotalStudentByCourse();
+    public Map<String, Integer> getCoursesWithHighEnrollment() {
+        Map<String, Integer> data = dao.getStudentCountByCourse();
         return data.entrySet().stream()
                 .filter(e -> e.getValue() >= 10)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,(e1, e2) -> e2, LinkedHashMap::new));

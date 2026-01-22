@@ -55,7 +55,7 @@ public class RegisteredMenu {
     public void showMyHistory(int studentId) {
         System.out.println("⏱ LỊCH SỬ ĐĂNG KÝ ");
 
-        List<EnrollmentDetailDTO> list = services.getHistory(studentId);
+        List<EnrollmentDetailDTO> list = services.getEnrollmentHistory(studentId);
 
         if (list.isEmpty()) {
             System.out.println("⚠ Bạn chưa đăng ký khóa học nào!");
@@ -92,7 +92,7 @@ public class RegisteredMenu {
                 default: System.out.println("⚠ Lựa trọn không hợp lệ!"); continue;
             }
 
-            List<EnrollmentDetailDTO> sortedList = services.sortEnrollment(studentId, sortBy, sortDir);
+            List<EnrollmentDetailDTO> sortedList = services.getSortedHistory(studentId, sortBy, sortDir);
 
             if (sortedList.isEmpty()) {
                 System.out.println("⚠ Chưa có dữ liệu.");

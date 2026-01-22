@@ -17,7 +17,7 @@ import java.util.List;
 public class StudentDAOImpl implements IStudentDAO {
 
     @Override
-    public Student checkStudent(String InputEmail, String InputPassword) {
+    public Student login(String InputEmail, String InputPassword) {
         String query = "SELECT * FROM student WHERE email = ?";
         try(Connection conn = DBConnection.getConnection();
             PreparedStatement prest = conn.prepareStatement(query)) {
@@ -37,7 +37,7 @@ public class StudentDAOImpl implements IStudentDAO {
     }
 
     @Override
-    public List<Course> listCourses() {
+    public List<Course> getAllCourses() {
         String query = "SELECT * FROM course";
         List<Course> courses = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
@@ -55,7 +55,7 @@ public class StudentDAOImpl implements IStudentDAO {
     }
 
     @Override
-    public List<Course> findCourse(String key) {
+    public List<Course> searchCourses(String key) {
         String query = "SELECT * FROM course WHERE name ilike ?";
         List<Course> courses = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
@@ -75,7 +75,7 @@ public class StudentDAOImpl implements IStudentDAO {
     }
 
     @Override
-    public List<EnrollmentDetailDTO> getHistory(int studentId) {
+    public List<EnrollmentDetailDTO> getEnrollmentHistory(int studentId) {
         List<EnrollmentDetailDTO> list = new ArrayList<>();
         String query = "SELECT e.id, s.name, c.name, e.registered_at, e.status " +
                 "FROM enrollment e " +
@@ -105,7 +105,7 @@ public class StudentDAOImpl implements IStudentDAO {
     }
 
     @Override
-    public boolean checkCourseExist(int id) {
+    public boolean existsCourseById(int id) {
         String query = "SELECT count(id) FROM course WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
@@ -123,7 +123,7 @@ public class StudentDAOImpl implements IStudentDAO {
     }
 
     @Override
-    public boolean checkEnrollmentExist(int studentID, int courseID) {
+    public boolean isAlreadyEnrolled(int studentID, int courseID) {
         String query = "SELECT count(id) FROM (SELECT id\n" +
                 "    FROM enrollment\n" +
                 "    WHERE student_id = ?\n" +
@@ -151,7 +151,7 @@ public class StudentDAOImpl implements IStudentDAO {
 
 
     @Override
-    public boolean registerCourse(int studentID, int courseID) {
+    public boolean createEnrollment(int studentID, int courseID) {
         String query = "INSERT INTO enrollment(student_id, course_id) VALUES (?, ?)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
@@ -167,31 +167,7 @@ public class StudentDAOImpl implements IStudentDAO {
     }
 
     @Override
-    public List<Enrollment> listEnrollment(int studentID) {
-        String query = "SELECT * FROM enrollment WHERE student_id = ?";
-        List<Enrollment> enrollments = new ArrayList<>();
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement prest = conn.prepareStatement(query)) {
-            prest.setInt(1, studentID);
-            ResultSet rs = prest.executeQuery();
-            while (rs.next()) {
-                int id = rs.getInt("id");
-                int student_id = rs.getInt("student_id");
-                int course_id = rs.getInt("course_id");
-                Date registered_at = rs.getDate("registered_at");
-                String status = rs.getString("status");
-                enrollments.add(new Enrollment(id, student_id, course_id, registered_at, status));
-            }
-            return enrollments;
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    @Override
-    public boolean cancelEnrollment(int enrollmentID) {
+    public boolean cancelEnrollmentRequest(int enrollmentID) {
         String query = "UPDATE enrollment SET status = 'CANCEL' WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query))
@@ -207,7 +183,7 @@ public class StudentDAOImpl implements IStudentDAO {
     }
 
     @Override
-    public boolean checkCheckCancelable(int studentID, int enrollmentID) {
+    public boolean isEnrollmentCancellable(int studentID, int enrollmentID) {
         String query = "SELECT * FROM enrollment WHERE student_id = ? AND id = ?";
         Enrollment foundEnrollment = null;
         try (Connection conn = DBConnection.getConnection();
@@ -236,7 +212,7 @@ public class StudentDAOImpl implements IStudentDAO {
     }
 
     @Override
-    public boolean changePassword(int studentID, String InputPassword) {
+    public boolean updatePassword(int studentID, String InputPassword) {
         String query = "UPDATE student SET password = ? WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query);) {
@@ -252,7 +228,7 @@ public class StudentDAOImpl implements IStudentDAO {
     }
 
     @Override
-    public boolean verification(int studentId, String InputPassword, String InputEmail) {
+    public boolean verifyCredentials(int studentId, String InputPassword, String InputEmail) {
         String query = "SELECT * FROM student WHERE id = ?";
         Student foundStudent = null;
         try (Connection conn = DBConnection.getConnection();
@@ -271,6 +247,28 @@ public class StudentDAOImpl implements IStudentDAO {
             e.printStackTrace();
         }
         return false;
+    }
+
+    @Override
+    public Course getTopCourse() {
+        String query = "SELECT c.*, COUNT(e.student_id) as sl " +
+                "FROM course c " +
+                "JOIN enrollment e ON c.id = e.course_id " +
+                "WHERE e.status = 'CONFIRM' " +
+                "GROUP BY c.id " +
+                "ORDER BY sl DESC LIMIT 1";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement prest = conn.prepareStatement(query)) {
+
+            ResultSet rs = prest.executeQuery();
+            if (rs.next()) {
+                return CourseMapper.toCourse(rs);
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }

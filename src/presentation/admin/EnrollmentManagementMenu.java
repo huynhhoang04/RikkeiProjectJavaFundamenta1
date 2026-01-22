@@ -1,6 +1,6 @@
 package presentation.admin;
 
-import business.IAdminSevices;
+import business.IAdminServices;
 import model.dto.EnrollmentDetailDTO;
 
 import java.util.ArrayList;
@@ -9,9 +9,9 @@ import java.util.Scanner;
 
 public class EnrollmentManagementMenu {
     private Scanner sc ;
-    private IAdminSevices services;
+    private IAdminServices services;
 
-    public EnrollmentManagementMenu(Scanner sc, IAdminSevices services) {
+    public EnrollmentManagementMenu(Scanner sc, IAdminServices services) {
         this.sc = sc;
         this.services = services;
     }
@@ -67,7 +67,7 @@ public class EnrollmentManagementMenu {
                 System.out.println("⚠ ID phải là số nguyên!");
                 continue;
             }
-            if (services.checkCourse(Integer.parseInt(input))) {
+            if (services.existsCourseById(Integer.parseInt(input))) {
                 return Integer.parseInt(input);
             }
             else {
@@ -81,7 +81,7 @@ public class EnrollmentManagementMenu {
         int courseId = inputCourseId();
         if (courseId == 0) return;
         System.out.println("𝄜 XEM DANH SÁCH ĐĂNG KÝ ");
-        List<EnrollmentDetailDTO> list = services.getCourseEnrollments(courseId);
+        List<EnrollmentDetailDTO> list = services.getEnrollmentsByCourse(courseId);
 
         if (list == null) {
             System.out.println("⚠ Khóa học không tồn tại!");
@@ -154,7 +154,7 @@ public class EnrollmentManagementMenu {
         int courseId = inputCourseId();
         if (courseId == 0) return;
 
-        List<EnrollmentDetailDTO> list = services.getCourseEnrollments(courseId);
+        List<EnrollmentDetailDTO> list = services.getEnrollmentsByCourse(courseId);
         List<Integer> validID = new ArrayList<>();
         list.forEach((e) -> {validID.add(e.getId());});
         if (list == null || list.isEmpty()) {

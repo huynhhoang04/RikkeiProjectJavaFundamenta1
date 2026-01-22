@@ -54,7 +54,7 @@ public class ReviewCourseMenu {
 
     public void handleShowListCourses() {
         System.out.println("𝄜 DANH SÁCH KHÓA HỌC");
-        List<Course> list = services.showListCourses();
+        List<Course> list = services.getAllCourses();
         printCourseList(list);
         System.out.println("\nẤn Enter để quay lại...");
         sc.nextLine();
@@ -68,7 +68,7 @@ public class ReviewCourseMenu {
         System.out.println("═══════════════════════════════════");
         if (key.equalsIgnoreCase("exit")) return;
 
-        List<Course> list = services.findCourse(key);
+        List<Course> list = services.searchCourses(key);
 
         if (list.isEmpty()) {
             System.out.println("⚠ Không tìm thấy khóa học nào chứa: \"" + key + "\"");
