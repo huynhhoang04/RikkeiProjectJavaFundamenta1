@@ -1,9 +1,6 @@
 package presentation;
 
 import business.IAdminSevices;
-import business.impl.AdminSevicesImpl;
-import dao.IAdminDAO;
-import dao.impl.AdminDAOImpl;
 import model.Admin;
 
 import java.util.Scanner;
