@@ -17,6 +17,7 @@ public class ReviewCourseMenu {
 
     public void showMenu(int id){
         while(true){
+            // hiển thị khóa học được gợi ý
             showSuggestCourse(id);
             System.out.println("═══════════════════════════════════");
             System.out.println("1. Xem danh sách hóa học đang có");
@@ -28,9 +29,11 @@ public class ReviewCourseMenu {
             if (choice.isEmpty()) continue;
             switch (choice) {
                 case "1":
+                    // hiển thị tất cả khóa học
                     handleShowListCourses();
                     break;
                 case "2":
+                    // tìm kiếm khóa học
                     handleFindCourse();
                     break;
                 case "3":
@@ -41,6 +44,7 @@ public class ReviewCourseMenu {
         }
     }
 
+    // hàm in bảng danh sách khóa học
     private void printCourseList(List<Course> list) {
         System.out.println("┌───────┬────────────────────────────────┬─────────────────┬─────────────────┬────────────┐");
         System.out.printf("│ %-5s │ %-30s │ %-15s │ %-15s │ %-10s │\n", "ID", "Tên Khóa Học", "Thời lượng(giờ)", "Giảng viên", "Ngày tạo");
@@ -52,6 +56,7 @@ public class ReviewCourseMenu {
         System.out.println("└───────┴────────────────────────────────┴─────────────────┴─────────────────┴────────────┘");
     }
 
+    // hàm xử lý hiển thị tất cả khóa học
     public void handleShowListCourses() {
         System.out.println("𝄜 DANH SÁCH KHÓA HỌC");
         List<Course> list = services.getAllCourses();
@@ -60,6 +65,7 @@ public class ReviewCourseMenu {
         sc.nextLine();
     }
 
+    // hàm xử lý tìm kiếm khóa học
     public void handleFindCourse() {
         System.out.println("═══════════════════════════════════");
         System.out.println("⌕ TÌM KIẾM KHÓA HỌC ");
@@ -68,6 +74,7 @@ public class ReviewCourseMenu {
         System.out.println("═══════════════════════════════════");
         if (key.equalsIgnoreCase("exit")) return;
 
+        // gọi service tìm kiếm gần đúng
         List<Course> list = services.searchCourses(key);
 
         if (list.isEmpty()) {
@@ -80,7 +87,9 @@ public class ReviewCourseMenu {
         sc.nextLine();
     }
 
+    // hiển thị bảng gợi ý khóa học
     private void showSuggestCourse(int studentId) {
+        // lấy danh sách gợi ý từ service
         List<Course> list = services.getSuggestedCourse(studentId);
         System.out.println("┌─────────────────────────────────────────────────────────────────┐");
         System.out.println("│                     ĐỀ XUẤT KHÓA HỌC PHÙ HỢP                    │");

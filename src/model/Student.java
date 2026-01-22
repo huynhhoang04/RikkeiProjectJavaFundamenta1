@@ -24,6 +24,19 @@ public class Student implements Comparable<Student>{
         this.created_at = created_at;
     }
 
+    public Student(int id, String name, Date dateOfBirth, String email, String gender, String phoneNumber) {
+        this.id = id;
+        this.name = name;
+        this.dateOfBirth = dateOfBirth;
+        this.email = email;
+        this.gender = gender;
+        this.phoneNumber = phoneNumber;
+    }
+
+    public Student(int id, String password) {
+        this.id = id;
+        this.password = password;
+    }
 
     public int getId() {
         return id;

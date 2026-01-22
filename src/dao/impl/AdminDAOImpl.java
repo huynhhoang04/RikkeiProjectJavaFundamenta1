@@ -18,21 +18,19 @@ public class AdminDAOImpl implements IAdminDAO {
 
     //region authentication (đăng nhập)
 
-        // tìm admin theo username
+    // tìm admin theo username
     @Override
     public Admin login(String InputUsername, String InputPassword) {
-        String query = "SELECT id, username, password FROM admin WHERE username=? ";
+        String query = "SELECT password FROM admin WHERE username=? ";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
             prest.setString(1, InputUsername);
             ResultSet rs = prest.executeQuery();
             if (rs.next()) {
-                int id = rs.getInt("id");
-                String OutputUsername = rs.getString("username");
                 String OutputPassword = rs.getString("password");
                 // so sánh mật khẩu nhập vào với mật khẩu đã mã hóa trong db
                 if (BCrypt.checkpw(InputPassword, OutputPassword)) {
-                    return new Admin(id, OutputUsername, OutputPassword);
+                    return new Admin("username", OutputPassword);
                 }
             }
         } catch (SQLException e) {
@@ -47,7 +45,7 @@ public class AdminDAOImpl implements IAdminDAO {
     // lấy toàn bộ danh sách khóa học
     @Override
     public List<Course> getAllCourses() {
-        String query = "SELECT * FROM course";
+        String query = "SELECT id, name, duration, instructor, created_at FROM course";
         List<Course> courses = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
@@ -134,20 +132,15 @@ public class AdminDAOImpl implements IAdminDAO {
     // tìm kiếm gần đúng theo tên
     @Override
     public List<Course> searchCourses(String key) {
-        String query = "SELECT * FROM course WHERE name ilike ?";
+        String query = "SELECT id, name, duration, instructor, created_at FROM course WHERE name ilike ?";
         List<Course> courses = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
             String searchformat = "%" + key + "%";
             prest.setString(1, searchformat);
             ResultSet rs = prest.executeQuery();
-            while (rs.next()) {
-                int id = rs.getInt("id");
-                String name = rs.getString("name");
-                int duration = rs.getInt("duration");
-                String instructor = rs.getString("instructor");
-                Date created_at = rs.getDate("created_at");
-                courses.add(new Course(id, name, duration, instructor, created_at));
+            while (rs.next()) {;
+                courses.add(CourseMapper.toCourse(rs));
             }
             return courses;
         } catch (SQLException e) {
@@ -215,7 +208,7 @@ public class AdminDAOImpl implements IAdminDAO {
     // lấy danh sách hoọc viên
     @Override
     public List<Student> getAllStudents() {
-        String query = "SELECT * FROM student";
+        String query = "SELECT id, name, dob, email, gender, phone FROM student";
         List<Student> students = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
@@ -330,7 +323,7 @@ public class AdminDAOImpl implements IAdminDAO {
         } else {
             return students;
         }
-        String query ="SELECT * FROM student WHERE " + column +" ilike ?";
+        String query ="SELECT id, name, dob, email, gender, phone FROM student WHERE " + column +" ilike ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
             String str = "%"+key+"%";

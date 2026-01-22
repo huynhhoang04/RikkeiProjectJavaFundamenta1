@@ -29,16 +29,16 @@ public class StatisticsMenu {
             if (choice.isEmpty()) continue;
             switch(choice){
                 case "1":
-                    handleTotalStats();
+                    handleTotalStats(); // tổng quan
                     break;
                 case "2":
-                    handleAllCoursesStats();
+                    handleAllCoursesStats(); // chi tiết từng khóa
                     break;
                 case "3":
-                    handleTop5Stats();
+                    handleTop5Stats(); // top 5
                     break;
                 case "4":
-                    handleThresholdStats();
+                    handleThresholdStats(); // khóa trên 10 hv
                     break;
                 case "5":
                     return;
@@ -48,6 +48,7 @@ public class StatisticsMenu {
         }
     }
 
+    // in bảng thống kê từ map
     private void printTable(Map<String, Integer> data) {
         if (data == null || data.isEmpty()) {
             System.out.println("⚠️ Không có dữ liệu nào.");
@@ -65,6 +66,7 @@ public class StatisticsMenu {
         System.out.println("└───────┴─────────────────────────────────────┴──────────┘");
     }
 
+    // thống kê tổng quan
     private void handleTotalStats() {
         Map<String, Integer> stats = services.getSystemStatistics();
         System.out.println("══════════════════════════════════════════");
@@ -76,6 +78,7 @@ public class StatisticsMenu {
         sc.nextLine();
     }
 
+    // thống kê số lượng hv theo khóa
     private void handleAllCoursesStats() {
         System.out.println("𝄜 SỐ LƯỢNG HỌC VIÊN THEO KHÓA ");
         Map<String, Integer> data = services.getStudentCountByCourse();
@@ -84,6 +87,7 @@ public class StatisticsMenu {
         sc.nextLine();
     }
 
+    // thống kê top 5
     private void handleTop5Stats() {
         System.out.println("♕ TOP 5 KHÓA HỌC ĐÔNG NHẤT ");
         Map<String, Integer> data = services.getTop5PopularCourses();
@@ -92,6 +96,7 @@ public class StatisticsMenu {
         sc.nextLine();
     }
 
+    // thống kê khóa học trên 10
     private void handleThresholdStats() {
         System.out.println("𝇕 CÁC KHÓA HỌC ĐẠT TRÊN 10 HỌC VIÊN ");
         Map<String, Integer> data = services.getCoursesWithHighEnrollment();

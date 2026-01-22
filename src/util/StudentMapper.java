@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class StudentMapper {
+    //chức năng để map khóa học nhanh từ resultset ra student tránh thừa code
     public static Student toStudent(ResultSet rs) throws SQLException {
         int id = rs.getInt("id");
         String name = rs.getString("name");
@@ -15,9 +16,7 @@ public class StudentMapper {
         Boolean gender = rs.getBoolean("gender");
         String genderStr = gender? "Nam" : "Nữ";
         String phone = rs.getString("phone");
-        String password = rs.getString("password");
-        Date created_at = rs.getDate("created_at");
 
-        return new Student(id, name, dateOfBirth,email, genderStr, phone, password, created_at);
+        return new Student(id, name, dateOfBirth,email, genderStr, phone);
     }
 }

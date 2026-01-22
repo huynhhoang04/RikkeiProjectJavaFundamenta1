@@ -30,13 +30,13 @@ public class EnrollmentManagementMenu {
             if (choice.isEmpty()) continue;
             switch(choice){
                 case "1":
-                    handleShowEnrollmentByCourse();
+                    handleShowEnrollmentByCourse(); // xem danh sách
                     break;
                 case "2":
-                    handleApproveDeny();
+                    handleApproveDeny(); // duyệt đơn
                     break;
                 case "3":
-                    handleDeleteEnrollment();
+                    handleDeleteEnrollment(); // xóa học viên khỏi lớp
                     break;
                 case "4":
                     return;
@@ -46,6 +46,7 @@ public class EnrollmentManagementMenu {
         }
     }
 
+    // in bảng danh sách đăng ký
     private void printList(List<EnrollmentDetailDTO> list) {
         System.out.println("┌───────┬──────────────────────┬──────────────────────────────────────────┬──────────────┬────────────┐");
         System.out.printf("│ %-5s │ %-20s │ %-40s │ %-12s │ %-10s │\n",
@@ -58,29 +59,33 @@ public class EnrollmentManagementMenu {
         System.out.println("└───────┴──────────────────────┴──────────────────────────────────────────┴──────────────┴────────────┘");
     }
 
+    // hàm nhập id khóa học để lọc dữ liệu
     private int inputCourseId() {
         while (true) {
             System.out.print("➜ Nhập ID khóa học(0 để trở về) : ");
             String input = sc.nextLine().trim();
             if (input.equals("0")) return 0;
+            // validate số
             if (!input.matches("\\d+")) {
                 System.out.println("⚠ ID phải là số nguyên!");
                 continue;
             }
+            // check tồn tại
             if (services.existsCourseById(Integer.parseInt(input))) {
                 return Integer.parseInt(input);
             }
             else {
                 System.out.println("⚠ ID không tồn tại!");
-                continue;
             }
         }
     }
 
+    // chức năng 1: xem danh sách sinh viên theo khóa
     private void handleShowEnrollmentByCourse() {
         int courseId = inputCourseId();
         if (courseId == 0) return;
         System.out.println("𝄜 XEM DANH SÁCH ĐĂNG KÝ ");
+        // gọi service lấy list
         List<EnrollmentDetailDTO> list = services.getEnrollmentsByCourse(courseId);
 
         if (list == null) {
@@ -94,13 +99,16 @@ public class EnrollmentManagementMenu {
         sc.nextLine();
     }
 
+    // chức năng 2: duyệt hoặc từ chối
     private void handleApproveDeny() {
         while (true) {
             System.out.println("═══════════════════════════════════");
             System.out.println("👍 DUYỆT PHIẾU ĐĂNG KÝ 👎");
             int courseId = inputCourseId();
             if (courseId == 0) return;
+            // lấy danh sách đang chờ duyệt (waiting)
             List<EnrollmentDetailDTO> pendingList = services.getPendingEnrollments(courseId);
+            // tạo list id hợp lệ để duyệt
             List<Integer> validID = new ArrayList<>();
             pendingList.forEach((e) -> {validID.add(e.getId());});
             if (pendingList.isEmpty()) {
@@ -113,6 +121,7 @@ public class EnrollmentManagementMenu {
 
 
             while (true) {
+                // nhập id phiếu đăng ký
                 System.out.print("➜ Nhập ID Phiếu muốn xử lý (hoặc 0 để thoát): ");
                 String enrIdStr = sc.nextLine().trim();
                 if (!enrIdStr.matches("\\d+")) {
@@ -120,6 +129,7 @@ public class EnrollmentManagementMenu {
                 }
                 int enrollmentId = Integer.parseInt(enrIdStr);
                 if (enrollmentId == 0) break;
+                // check xem id có trong list chờ duyệt không
                 if (!validID.contains(enrollmentId)) {
                     System.out.println("⚠ Có thể ID không thuộc khóa học này.");
                     continue;
@@ -134,9 +144,11 @@ public class EnrollmentManagementMenu {
 
                 boolean success = false;
                 if (action.equals("1")) {
+                    // gọi service duyệt
                     success = services.approveEnrollment(enrollmentId);
                     if (success) System.out.println("✔ Đã DUYỆT thành công!");
                 } else if (action.equals("2")) {
+                    // gọi service từ chối
                     success = services.denyEnrollment(enrollmentId);
                     if (success) System.out.println(" ⃠  Đã TỪ CHỐI phiếu này!");
                 } else {
@@ -148,13 +160,16 @@ public class EnrollmentManagementMenu {
         }
     }
 
+    // chức năng 3: xóa enrollment
     private void handleDeleteEnrollment() {
         System.out.println("═══════════════════════════════════");
         System.out.println("🗑 XÓA HỌC VIÊN KHỎI KHÓA HỌC ");
         int courseId = inputCourseId();
         if (courseId == 0) return;
 
+        // lấy danh sách theo khóa học
         List<EnrollmentDetailDTO> list = services.getEnrollmentsByCourse(courseId);
+        //dđưa vào luôn ds id hợp lệ (status là waiting)
         List<Integer> validID = new ArrayList<>();
         list.forEach((e) -> {validID.add(e.getId());});
         if (list == null || list.isEmpty()) {
@@ -169,6 +184,7 @@ public class EnrollmentManagementMenu {
             System.out.print("➜ Nhập ID Phiếu đăng ký (Enrollment ID) muốn xóa (hoặc 0 để thoát): ");
             String input = sc.nextLine().trim();
 
+            //validate số nguyên
             if (!input.matches("\\d+")) {
                 System.out.println("❌ ID phải là số!");
                 continue;
@@ -176,6 +192,7 @@ public class EnrollmentManagementMenu {
 
             int enrollmentId = Integer.parseInt(input);
             if (enrollmentId == 0) break;
+            // check id hợp lệ
             if (!validID.contains(enrollmentId)) {
                 System.out.println("⚠ Có thể ID không thuộc khóa học này.");
                 continue;

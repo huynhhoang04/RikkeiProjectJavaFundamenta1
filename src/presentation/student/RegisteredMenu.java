@@ -27,9 +27,11 @@ public class RegisteredMenu {
             if (choice.isEmpty()) continue;
             switch (choice){
                 case "1":
+                    // hiển thị danh sách đã đăng ký
                     showMyHistory(studentID);
                     break;
                 case "2":
+                    // vào menu sắp xếp
                     handleSortMenu(studentID);
                     break;
                 case "3":
@@ -40,6 +42,7 @@ public class RegisteredMenu {
         }
     }
 
+    // hàm in bảng danh sách đăng ký
     private void printList(List<EnrollmentDetailDTO> list) {
         System.out.println("┌───────┬──────────────────────┬────────────────────────────────┬──────────────┬────────────┐");
         System.out.printf("│ %-5s │ %-20s │ %-30s │ %-12s │ %-10s │\n",
@@ -52,21 +55,24 @@ public class RegisteredMenu {
         System.out.println("└───────┴──────────────────────┴────────────────────────────────┴──────────────┴────────────┘");
     }
 
+    //hàm sử lý ls đăng ký
     public void showMyHistory(int studentId) {
         System.out.println("⏱ LỊCH SỬ ĐĂNG KÝ ");
 
+        // lấy lịch sử từ service
         List<EnrollmentDetailDTO> list = services.getEnrollmentHistory(studentId);
 
         if (list.isEmpty()) {
             System.out.println("⚠ Bạn chưa đăng ký khóa học nào!");
         } else {
+            // gọi hàm in bảng
             printList(list);
         }
         System.out.println("\nẤn Enter để quay lại...");
         sc.nextLine();
     }
 
-
+    //hàm sử lý sắp xếp ls đăng ký
     public void handleSortMenu(int studentId) {
         while (true) {
             System.out.println("═══════════════════════════════════");
@@ -83,6 +89,7 @@ public class RegisteredMenu {
             String sortBy = "";
             String sortDir = "";
 
+            // gán tham số sort dựa trên lựa chọn
             switch (choice) {
                 case "1": sortBy = "name"; sortDir = "asc"; break;
                 case "2": sortBy = "name"; sortDir = "desc"; break;
@@ -92,6 +99,7 @@ public class RegisteredMenu {
                 default: System.out.println("⚠ Lựa trọn không hợp lệ!"); continue;
             }
 
+            // gọi service lấy list đã sắp xếp
             List<EnrollmentDetailDTO> sortedList = services.getSortedHistory(studentId, sortBy, sortDir);
 
             if (sortedList.isEmpty()) {

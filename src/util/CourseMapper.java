@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class CourseMapper {
+    //chức năng để map khóa học nhanh từ resultset ra course tránh thừa code
     public static Course toCourse(ResultSet rs) throws SQLException {
         int id = rs.getInt("id");
         String name = rs.getString("name");

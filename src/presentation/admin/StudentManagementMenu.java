@@ -67,6 +67,7 @@ public class StudentManagementMenu {
             }
         }
     }
+    // in bảng danh sách học viên
     private void printStudentList(List<Student> list) {
         if (list.isEmpty()) {
             System.out.println("⚠️ Danh sách trống.");
@@ -85,25 +86,28 @@ public class StudentManagementMenu {
         System.out.println("└───────┴──────────────────────┴──────────────┴───────────────────────────┴────────────┴────────────┘");
     }
 
+    // nhập và kiểm tra id học viên
     private int inputStudentId() {
         while (true) {
             System.out.print("➜ Nhập ID học viên : ");
             String input = sc.nextLine().trim();
             if (input.equals("0")) return 0;
+            // check số
             if (!input.matches("\\d+")) {
                 System.out.println("⚠ ID phải là số nguyên!");
                 continue;
             }
+            // check id tồn tại
             if (services.existsStudentById(Integer.parseInt(input))) {
                 return Integer.parseInt(input);
             }
             else {
                 System.out.println("⚠ ID không tồn tại!");
-                continue;
             }
         }
     }
 
+    // hiển thị toàn bộ học viên
     public void handleShowListStudent() {
         System.out.println("𝄜 DANH SÁCH HỌC VIÊN ");
         List<Student> list = services.getAllStudents();
@@ -112,6 +116,7 @@ public class StudentManagementMenu {
         sc.nextLine();
     }
 
+    // thêm học viên
     public void handleAddStudent() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         while (true) {
@@ -119,6 +124,7 @@ public class StudentManagementMenu {
             System.out.println("✚ THÊM HỌC VIÊN MỚI ");
             System.out.println("(Gõ 'exit' để hủy và quay lại menu chính)");
             try {
+                // nhập tên
                 System.out.print("1. Nhập tên: ");
                 String name = sc.nextLine().trim();
                 if (name.equalsIgnoreCase("exit")) break;
@@ -127,6 +133,7 @@ public class StudentManagementMenu {
                     continue;
                 }
 
+                // nhập và validate ngày sinh
                 System.out.print("2. Nhập ngày sinh (yyyy-MM-dd): ");
                 String dobStr = sc.nextLine().trim();
                 if (dobStr.equalsIgnoreCase("exit")) break;
@@ -139,6 +146,7 @@ public class StudentManagementMenu {
                     continue;}
                 Date dob = sdf.parse(dobStr);
 
+                // nhập và validate email
                 System.out.print("3. Nhập Email: ");
                 String email = sc.nextLine().trim();
                 if (email.equalsIgnoreCase("exit")) break;
@@ -151,11 +159,13 @@ public class StudentManagementMenu {
                     continue;
                 }
 
+                // nhập giới tính
                 System.out.print("4. Giới tính (1: Nam, 2: Nữ): ");
                 String genderChoice = sc.nextLine().trim();
                 if (genderChoice.equalsIgnoreCase("exit")) break;
                 boolean gender = genderChoice.equals("1") || genderChoice.equalsIgnoreCase("Nam");
 
+                // nhập sđt
                 System.out.print("5. Số điện thoại: ");
                 String phone = sc.nextLine().trim();
                 if (phone.equalsIgnoreCase("exit")) break;
@@ -168,6 +178,7 @@ public class StudentManagementMenu {
                     continue;
                 }
 
+                // nhập pass
                 System.out.print("6. Mật khẩu: ");
                 String pass = sc.nextLine().trim();
                 if (pass.equalsIgnoreCase("exit")) break;
@@ -178,6 +189,7 @@ public class StudentManagementMenu {
 
                 System.out.println("═══════════════════════════════════");
 
+                // gọi service tạo mới
                 boolean success = services.createStudent(name, dob, email, gender, phone, pass);
 
                 if (success) {
@@ -193,6 +205,7 @@ public class StudentManagementMenu {
         }
     }
 
+    // sửa học viên
     public void handleEditStudent() {
         int id = inputStudentId();
         while (true) {
@@ -208,6 +221,7 @@ public class StudentManagementMenu {
             String fieldName = "";
             String label = "";
 
+            // xác định cột trong db và nhãn hiển thị ra ngoài dựa trên lựa chọn
             switch (choice) {
                 case "1": fieldName = "name";     label = "Tên"; break;
                 case "2": fieldName = "dob";      label = "Ngày sinh (yyyy-MM-dd)"; break;
@@ -218,25 +232,31 @@ public class StudentManagementMenu {
                 default: System.out.println("⚠ Lựa trọn không hợp lệ!"); continue;
             }
 
+            // yêu cầu nhập giá trị mới
             System.out.printf("➜ Nhập %s mới: ", label);
             String newValue = sc.nextLine().trim();
 
+            // validate: không được để trống dữ liệu
             if (newValue.isEmpty()) {
                 System.out.println("⚠ Không được để trống!"); continue;
             }
 
+            // validate: kiểm tra định dạng ngày sinh
             if (fieldName.equals("dob") && !isValidDOB(newValue)) {
                 System.out.println("⚠ Ngày sinh sai định dạng (yyyy-MM-dd)!"); continue;
             }
 
+            // validate: kiểm tra định dạng email
             if (fieldName.equals("email") && !isValidEmail(newValue)) {
                 System.out.println("⚠ Email không hợp lệ!"); continue;
             }
 
+            // validate: kiểm tra định dạng số điện thoại
             if (fieldName.equals("phone") && !checkPhone(newValue)) {
                 System.out.println("⚠ SĐT không hợp lệ!"); continue;
             }
 
+            // xử lý riêng cho giới tính chấp nhận nhập 1 ,0 hoặc chữ Nam, Nữ
             if (fieldName.equals("gender")) {
                 if (newValue.equalsIgnoreCase("Nam") || newValue.equals("1")) newValue = "1";
                 else if (newValue.equalsIgnoreCase("Nu") || newValue.equals("0") || newValue.equals("2")) newValue = "0";
@@ -245,7 +265,9 @@ public class StudentManagementMenu {
                 }
             }
 
+            // gọi service để update dữ liệu xuống database
             boolean success = services.updateStudentField(id, fieldName, newValue);
+            // thông báo kết quả ra màn hình
             if (success) {
                 System.out.println("✔ Cập nhật thành công!");
             } else {
@@ -256,6 +278,7 @@ public class StudentManagementMenu {
         }
     }
 
+    // sắp xếp
     public void handleSortStudent() {
         while (true) {
             System.out.println("═══════════════════════════════════");
@@ -274,6 +297,7 @@ public class StudentManagementMenu {
             String sortBy = "";
             String sortOrder = "";
 
+            //xác định lựa trọn sắp xếp theo gi tăng hay giảm dần
             switch (choice) {
                 case "1":
                     sortBy = "name"; sortOrder = "asc";
@@ -291,6 +315,7 @@ public class StudentManagementMenu {
                     System.out.println("⚠ Lựa chọn không hợp lệ!");
                     continue;
             }
+            // gọi service lấy list đã sắp xếp
             List<Student> result = services.getSortedStudents(sortBy, sortOrder);
             if (result.isEmpty()) {
                 System.out.println("⚠ Danh sách trống!");
@@ -302,10 +327,12 @@ public class StudentManagementMenu {
         }
     }
 
+    // xóa học viên
     public void handleDeleteStudent() {
         while (true) {
             System.out.println("═══════════════════════════════════");
             System.out.println("🗑 XÓA HỌC VIÊN");
+            //input id hv và xác nhận xóa
             int studentID = inputStudentId();
             System.out.print("⚠️ Bạn có chắc chắn muốn xóa học viên ID " + studentID + "? (y/n): ");
             String confirm = sc.nextLine();
@@ -315,19 +342,21 @@ public class StudentManagementMenu {
                 continue;
             }
 
+            // gọi service xóa
             boolean isDeleted = services.deleteStudent(studentID);
             if (isDeleted) {
                 System.out.println("✔ Xóa học viên thành công!");
                 break;
             } else {
                 System.err.println("⚠ Xóa thất bại!");
-                System.out.println("👉 Nguyên nhân: Học viên đang đang tham gia khóa học!");
+                System.out.println("⚠ Nguyên nhân: Học viên đang đang tham gia khóa học!");
             }
             System.out.println("Ấn Enter để quay lại...");
             sc.nextLine();
         }
     }
 
+    // tìm kiếm
     public void handleFindStudent() {
         while (true) {
             System.out.println("═══════════════════════════════════");
@@ -342,6 +371,7 @@ public class StudentManagementMenu {
             if (choice.equals("3")) break;
 
             String searchBy = "";
+            //xác định tìm kiếm theo gì
             switch (choice) {
                 case "1": searchBy = "name"; break;
                 case "2": searchBy = "email"; break;
@@ -350,16 +380,20 @@ public class StudentManagementMenu {
                     continue;
             }
 
+            //nhập từ khóa
             System.out.print("➜ Nhập từ khóa tìm kiếm: ");
             String key = sc.nextLine().trim();
+            //validate rỗng
             if (key.isEmpty()) {
                 System.out.println("⚠  Từ khóa không được để trống!");
                 continue;
             }
+            // gọi service tìm kiếm
             List<Student> result = services.searchStudents(key, searchBy);
             if (result.isEmpty()) {
                 System.out.println("⚠  Không tìm thấy học viên nào phù hợp.");
             } else {
+                //in kết quả
                 System.out.println("✔ Tìm thấy " + result.size() + " kết quả:");
                 printStudentList(result);
             }

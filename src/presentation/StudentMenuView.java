@@ -31,6 +31,7 @@ public class StudentMenuView {
             if (choice.isEmpty()) continue;
             switch (choice){
                 case "1":
+                    // menu xem khóa học
                     ReviewCourseMenu rcm = new ReviewCourseMenu(sc,services);
                     rcm.showMenu(id);
                     break;
@@ -38,6 +39,7 @@ public class StudentMenuView {
                     handleRegisterCourse(id);
                     break;
                 case "3":
+                    // menu xem lịch sử đăng ký
                     RegisteredMenu rm = new RegisteredMenu(sc,services);
                     rm.showMenu(id);
                     break;
@@ -55,19 +57,23 @@ public class StudentMenuView {
         }
     }
 
+    // hàm sử lý đăng ký khóa học
     public void handleRegisterCourse(int studentId) {
         while (true) {
             System.out.println("═══════════════════════════════════");
             System.out.print("Nhập ID khóa học muốn đăng ký (hoặc 0 để thoát): ");
 
+            //nhập id khóa học
             String input = sc.nextLine().trim();
             if (input.equals("0")) return ;
+            // validate số
             if (!input.matches("\\d+")) {
                 System.out.println("⚠ ID phải là số nguyên!");
                 continue;
             }
             int courseId = Integer.parseInt(input);
             System.out.println("═══════════════════════════════════");
+            // gọi service đăng ký
             boolean isSuccess = services.registerCourse(studentId, courseId);
 
             if (isSuccess) {
@@ -81,21 +87,24 @@ public class StudentMenuView {
         sc.nextLine();
     }
 
+    //hàm sử lý hủy khóa học
     public void handleCancelEnrollment(int studentId) {
         while (true) {
             System.out.println("═══════════════════════════════════");
             System.out.println("⛌ HỦY ĐĂNG KÝ KHÓA HỌC ");
             System.out.print("Nhập ID phiếu đăng ký muốn hủy (hoặc 0 để quay lại): ");
+            //nhập id khóa học
             String input = sc.nextLine().trim();
-
+            // validate số
             if (!input.matches("\\d+")) {
-                System.err.println("❌ ID phải là số nguyên! Vui lòng nhập lại.");
+                System.err.println("⚠ ID phải là số nguyên! Vui lòng nhập lại.");
                 continue;
             }
 
             int enrollmentId = Integer.parseInt(input);
             if (enrollmentId == 0) return;
             System.out.println("═══════════════════════════════════");
+            // gọi service hủy
             boolean isSuccess = services.cancelEnrollment(studentId, enrollmentId);
 
             if (isSuccess) {
@@ -109,6 +118,7 @@ public class StudentMenuView {
         sc.nextLine();
     }
 
+    //hàm sử lý đổi mk
     public void handleChangePassword(int studentId) {
         while (true) {
             System.out.println("═══════════════════════════════════");
@@ -126,11 +136,11 @@ public class StudentMenuView {
             System.out.print("Nhập Mật khẩu mới: ");
             String newPass = sc.nextLine().trim();
 
-            // 4Xác nhận Mật khẩu mới
+            // Xác nhận Mật khẩu mới
             System.out.print("Nhập lại Mật khẩu mới: ");
             String confirmPass = sc.nextLine().trim();
             System.out.println("═══════════════════════════════════");
-            // VALIDATE DATA
+            // validate dữ liệu
             if (email.isEmpty() || oldPass.isEmpty() || newPass.isEmpty()) {
                 System.out.println("⚠ Không được để trống thông tin!");
                 continue;
@@ -144,6 +154,7 @@ public class StudentMenuView {
                 continue;
             }
 
+            //gọi service
             boolean isSuccess = services.changePassword(studentId, email, oldPass, newPass);
 
             if (isSuccess) {
