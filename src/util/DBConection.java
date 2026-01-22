@@ -1,17 +1,25 @@
 package util;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.*;
+import java.util.Properties;
 
 public class DBConection {
-    private static String Url = "jdbc:postgresql://localhost:5432/coursemanagement";
-    private static String User = "postgres";
-    private static String Password = "4105";
 
     public static Connection getConnection() {
         Connection conn = null;
-        try {
+        try (InputStream in = DBConection.class.getClassLoader().getResourceAsStream("dbconfig.properties");
+             ) {
+            Properties properties = new Properties();
+            if(in != null) {
+                properties.load(in);
+            }
+            String Url = properties.getProperty("url");
+            String User = properties.getProperty("user");
+            String Password = properties.getProperty("password");
             conn = DriverManager.getConnection(Url, User, Password);
-        } catch (SQLException e) {
+        } catch (SQLException | IOException e) {
             System.err.println("Kett noi that bai");
             throw new RuntimeException(e);
         }
