@@ -1,5 +1,6 @@
 package presentation;
 
+import business.IAdminSevices;
 import business.impl.AdminSevicesImpl;
 import dao.IAdminDAO;
 import dao.impl.AdminDAOImpl;
@@ -8,28 +9,35 @@ import model.Admin;
 import java.util.Scanner;
 
 public class AdminLoginView {
-    Scanner sc = new Scanner(System.in);
-    IAdminDAO dao = new AdminDAOImpl();
-    AdminSevicesImpl sevices = new AdminSevicesImpl(dao);
+    private Scanner sc ;
+    private IAdminSevices services;
+
+    public AdminLoginView(Scanner sc, IAdminSevices services) {
+        this.sc = sc;
+        this.services = services;
+    }
+
     public void showAdminLogin(){
         while(true){
             try {
-                System.out.print("Enter UserName(exit để trở về) :");
+                System.out.println("═══════════════════════════════════");
+                System.out.print("➜ Enter UserName(exit để trở về) : ");
                 String name = sc.nextLine().trim();
-                System.out.print("Enter Password(exit để trở về) :");
-                String pass = sc.nextLine().trim();
                 if(name.equals("exit")) return;
+                System.out.print("➜ Enter Password(exit để trở về) : ");
+                String pass = sc.nextLine().trim();
                 if(pass.equals("exit")) return;
+                System.out.println("═══════════════════════════════════");
                 if(name.isEmpty() || pass.isEmpty()){
-                    System.out.println("Tên và mật khẩu không được để trống. Vui lòng nập lại!");
+                    System.out.println("⚠ Tên và mật khẩu không được để trống. Vui lòng nập lại!");
                 }
-                Admin admin = sevices.login(name,pass);
+                Admin admin = services.login(name,pass);
                 if(admin == null){
-                    System.out.println("Sai tên hoặc mật khẩu");
+                    System.out.println("⚠ Sai tên hoặc mật khẩu");
                 }
                 else{
-                    AdminMenuView adminMenuView = new AdminMenuView();
-                    System.out.println("Đăng nhập thành công!");
+                    AdminMenuView adminMenuView = new AdminMenuView(sc,services);
+                    System.out.println("✔ Đăng nhập thành công!");
                     boolean logout = adminMenuView.showAdminMenu();
                     if(logout){
                         return;

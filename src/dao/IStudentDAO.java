@@ -14,6 +14,7 @@ public interface IStudentDAO {
     List<Course> findCourse(String key);
     List<EnrollmentDetailDTO> getHistory(int Id);
     boolean checkCourseExist(int id);
+    boolean checkEnrollmentExist(int studentID,  int courseID);
     boolean registerCourse(int studentID, int courseID);
 
     List<Enrollment>  listEnrollment(int studentID);

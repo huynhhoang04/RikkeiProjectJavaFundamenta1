@@ -39,6 +39,9 @@ public class StudentServicesImpl implements IStudentServices {
         if (!dao.checkCourseExist(courseID)) {
             return false;
         }
+        if (!dao.checkEnrollmentExist(studentID, courseID)) {
+            return false;
+        }
         return dao.registerCourse(studentID, courseID);
     }
 

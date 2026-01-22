@@ -14,6 +14,7 @@ public interface IAdminSevices {
 
     List<Course> showListCourse();
     boolean addCourse(String name, int duration, String instructor);
+    boolean checkCourse(int courseId);
     boolean updateCourseName(int id, String newName);
     boolean updateCourseDuration(int id, int newDuration);
     boolean updateCourseInstructor(int id, String newInstructor);
@@ -23,6 +24,7 @@ public interface IAdminSevices {
 
     List<Student> showListStudent();
     boolean addStudent(String name, Date dob, String email, boolean gender, String phone, String password);
+    boolean checkStudent(int id);
     boolean editStudent(int id, String fieldName, String newValue) ;
     List<Student> findStudent(String key, String searchBy);
     List<Student> sortListStudent(String sortBy, String sortOrder);

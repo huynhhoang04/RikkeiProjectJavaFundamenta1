@@ -1,35 +1,41 @@
 package presentation;
 
-import business.impl.StudentServicesImpl;
-import dao.impl.StudentDAOImpl;
+import business.IStudentServices;
 import model.Student;
 
 import java.util.Scanner;
 
 public class StudentLoginView {
-    Scanner sc = new Scanner(System.in);
-    StudentDAOImpl dao = new StudentDAOImpl();
-    StudentServicesImpl services = new StudentServicesImpl(dao);
+    private Scanner sc ;
+    private IStudentServices services;
+
+    public StudentLoginView(Scanner sc, IStudentServices services) {
+        this.sc = sc;
+        this.services = services;
+    }
+
     public void showStudentLogin(){
         while (true){
             try{
-                System.out.println("Enter Email address :");
+                System.out.println("═══════════════════════════════════");
+                System.out.print("Enter Email Address(exit để trở về) : ");
                 String email = sc.nextLine().trim();
-
-                System.out.println("Enter Password :");
+                if(email.equals("exit")) return;
+                System.out.print("Enter Password(exit để trở về) : ");
                 String pass = sc.nextLine().trim();
-
+                if(pass.equals("exit")) return;
+                System.out.println("═══════════════════════════════════");
                 if(email.isEmpty() || pass.isEmpty()){
-                    System.out.println("Email và mật khẩu không được để trống");
+                    System.out.println("⚠ Email và mật khẩu không được để trống");
                 }
 
                 Student student = services.login(email,pass);
                 if(student == null){
-                    System.out.println("Sai email hoặc mật khẩu!");
+                    System.out.println("⚠ Sai email hoặc mật khẩu!");
                 }
                 else{
-                    System.out.println("Đăng nhập thành công!Id : " + student.getId());
-                    StudentMenuView studentMenuView = new StudentMenuView();
+                    System.out.println("✔ Đăng nhập thành công!Id : " + student.getId());
+                    StudentMenuView studentMenuView = new StudentMenuView(sc,services);
                     boolean logout = studentMenuView.showStudentMenu(student.getId());
                     if(logout){
                         return;

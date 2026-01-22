@@ -369,7 +369,7 @@ public class AdminDAOImpl implements IAdminDAO {
                  "FROM enrollment e " +
                  "JOIN student s ON e.student_id = s.id " +
                  "JOIN course c ON e.course_id = c.id " +
-                 "WHERE e.course_id = ?";
+                 "WHERE e.course_id = ? AND e.status = 'CONFIRM'";
          try (Connection conn = DBConection.getConnection();
               PreparedStatement prest = conn.prepareStatement(query)) {
             prest.setInt(1, courseId);

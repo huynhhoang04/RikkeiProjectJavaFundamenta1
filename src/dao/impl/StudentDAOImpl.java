@@ -92,6 +92,7 @@ public class StudentDAOImpl implements IStudentDAO {
                             rs.getString("status")
                     ));
                 }
+                return list;
             }
         } catch (SQLException e) {
             System.err.println(e.getMessage());
@@ -119,10 +120,38 @@ public class StudentDAOImpl implements IStudentDAO {
     }
 
     @Override
+    public boolean checkEnrollmentExist(int studentID, int courseID) {
+        String query = "SELECT count(id) FROM (SELECT id\n" +
+                "    FROM enrollment\n" +
+                "    WHERE student_id = ?\n" +
+                "    AND course_id = ?\n" +
+                "    INTERSECT\n" +
+                "    SELECT id\n" +
+                "    FROM enrollment\n" +
+                "    WHERE status = 'CONFIRM'\n" +
+                "    OR status = 'WAITING');";
+        try (Connection conn = DBConection.getConnection();
+             PreparedStatement prest = conn.prepareStatement(query)) {
+            prest.setInt(1, studentID);
+            prest.setInt(2, courseID);
+            ResultSet rs = prest.executeQuery();
+            if (rs.next()) {
+                int count = rs.getInt(1);
+                return count == 0;
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+
+    @Override
     public boolean registerCourse(int studentID, int courseID) {
         String query = "INSERT INTO enrollment(student_id, course_id) VALUES (?, ?)";
         try ( Connection conn = DBConection.getConnection();
-              PreparedStatement prest = conn.prepareStatement(query);) {
+              PreparedStatement prest = conn.prepareStatement(query)) {
             prest.setInt(1, studentID);
             prest.setInt(2, courseID);
             int rowInserted = prest.executeUpdate();

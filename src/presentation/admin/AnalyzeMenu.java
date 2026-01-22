@@ -1,5 +1,6 @@
 package presentation.admin;
 
+import business.IAdminSevices;
 import business.impl.AdminSevicesImpl;
 import dao.IAdminDAO;
 import dao.impl.AdminDAOImpl;
@@ -8,19 +9,25 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class AnalyzeMenu {
-    Scanner sc = new Scanner(System.in);
-    IAdminDAO dao = new AdminDAOImpl();
-    AdminSevicesImpl services = new AdminSevicesImpl(dao);
+    private Scanner sc ;
+    private IAdminSevices services;
+
+    public AnalyzeMenu(Scanner sc, IAdminSevices services) {
+        this.sc = sc;
+        this.services = services;
+    }
+
     public void showMenu(){
-        menuChinh: while(true){
-            System.out.println("============Thống kê=============");
+        while(true){
+            System.out.println("═══════════════════════════════════");
+            System.out.println("☰ Thống kê ");
             System.out.println("1. Thống kê số lượng khóa học và tổng học viên");
             System.out.println("2. Thống kê tổng số học viên theo từng khóa");
             System.out.println("3. Thống kê top 5 khóa học đông sinh viên nhất");
             System.out.println("4. Liệt kê các khóa học có trên 10 học viên");
             System.out.println("5. Trở về");
-            System.out.println("================================");
-            System.out.print("Nhập lựa trọn : ");
+            System.out.println("═══════════════════════════════════");
+            System.out.print("➜ Nhập lựa trọn : ");
             switch(sc.nextLine()){
                 case "1":
                     handleTotalStats();
@@ -37,61 +44,66 @@ public class AnalyzeMenu {
                 case "5":
                     return;
                 default:
-                    System.out.println("Lựa trọn Invalid");
+                    System.out.println("⚠ Lựa trọn không hợp lệ!");
             }
         }
     }
 
-    private void printTable(Map<String, Integer> data, boolean showRank) {
+    private void printTable(Map<String, Integer> data) {
         if (data == null || data.isEmpty()) {
             System.out.println("⚠️ Không có dữ liệu nào.");
             return;
         }
 
-        System.out.println("-------------------------------------------------------");
-        if (showRank) {
-            System.out.printf("| %-5s | %-35s | %-8s |\n", "TOP", "Tên Khóa Học", "Số HV");
-        } else {
-            System.out.printf("| %-35s | %-10s |\n", "Tên Khóa Học", "Số Lượng");
-        }
-        System.out.println("-------------------------------------------------------");
+        System.out.println("┌───────┬─────────────────────────────────────┬──────────┐");
+        System.out.printf("│ %-5s │ %-35s │ %-8s │\n", "STT", "Tên Khóa Học", "Số HV");
+        System.out.println("├───────┼─────────────────────────────────────┼──────────┤");
 
         int rank = 1;
         for (Map.Entry<String, Integer> entry : data.entrySet()) {
-            if (showRank) {
-                System.out.printf("| %-5d | %-35s | %-8d |\n", rank++, entry.getKey(), entry.getValue());
-            } else {
-                System.out.printf("| %-35s | %-10d |\n", entry.getKey(), entry.getValue());
-            }
+            System.out.printf("│ %-5d │ %-35s │ %-8d │\n", rank++, entry.getKey(), entry.getValue());
         }
-        System.out.println("-------------------------------------------------------");
+        System.out.println("└───────┴─────────────────────────────────────┴──────────┘");
     }
 
     private void handleTotalStats() {
-        // Hàm này trả về Map có key "total_course" và "total_student"
         Map<String, Integer> stats = services.showTotalCoursesAndStudents();
-
-        System.out.println("\n--- TỔNG QUAN HỆ THỐNG ---");
-        // Dùng getOrDefault để tránh lỗi null nếu map rỗng
-        System.out.println("📚 Tổng số khóa học : " + stats.getOrDefault("courses", 0));
-        System.out.println("👨‍🎓 Tổng số học viên : " + stats.getOrDefault("students", 0));
+        System.out.println("══════════════════════════════════════════");
+        System.out.println("∑ TỔNG QUAN HỆ THỐNG ");
+        System.out.println("📖 Tổng số khóa học : " + stats.getOrDefault("courses", 0));
+        System.out.println("👤 Tổng số học viên : " + stats.getOrDefault("students", 0));
+        System.out.println("══════════════════════════════════════════");
+        System.out.println("Ấn Enter để quay lại...");
+        sc.nextLine();
     }
 
     private void handleAllCoursesStats() {
-        System.out.println("\n--- SỐ LƯỢNG HỌC VIÊN THEO KHÓA ---");
+        System.out.println("═══════════════════════════════════════════════════════════════");
+        System.out.println("𝄜 SỐ LƯỢNG HỌC VIÊN THEO KHÓA ");
         Map<String, Integer> data = services.showTotalStudentsByCourse();
-        printTable(data, false);
+        printTable(data);
+        System.out.println("═══════════════════════════════════════════════════════════════");
+        System.out.println("Ấn Enter để quay lại...");
+        sc.nextLine();
     }
 
     private void handleTop5Stats() {
-        System.out.println("\n--- TOP 5 KHÓA HỌC ĐÔNG NHẤT ---");
+        System.out.println("═══════════════════════════════════════════════════════════════");
+        System.out.println("♕ TOP 5 KHÓA HỌC ĐÔNG NHẤT ");
         Map<String, Integer> data = services.Top5CourseWithStudents();
-        printTable(data, true); // true để hiện cột Top 1, 2, 3
+        printTable(data);
+        System.out.println("═══════════════════════════════════════════════════════════════");
+        System.out.println("Ấn Enter để quay lại...");
+        sc.nextLine();
     }
 
     private void handleThresholdStats() {
-        System.out.println("\n--- CÁC KHÓA HỌC > 10 HỌC VIÊN ---");
+        System.out.println("═══════════════════════════════════════════════════════════════");
+        System.out.println("𝇕 CÁC KHÓA HỌC ĐẠT TRÊN 10 HỌC VIÊN ");
         Map<String, Integer> data = services.CourseWithMoreThan10Students();
-        printTable(data, false);
+        printTable(data);
+        System.out.println("═══════════════════════════════════════════════════════════════");
+        System.out.println("Ấn Enter để quay lại...");
+        sc.nextLine();
     }
 }

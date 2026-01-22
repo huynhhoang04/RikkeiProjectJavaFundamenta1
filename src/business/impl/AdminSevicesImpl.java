@@ -35,6 +35,11 @@ public class AdminSevicesImpl implements IAdminSevices {
     }
 
     @Override
+    public boolean checkCourse(int courseId) {
+        return dao.checkCourse(courseId);
+    }
+
+    @Override
     public boolean updateCourseName(int id, String newName) {
         return dao.updateCourseName(id, newName);
     }
@@ -98,7 +103,15 @@ public class AdminSevicesImpl implements IAdminSevices {
     }
 
     @Override
+    public boolean checkStudent(int id) {
+        return dao.checkStudentExists(id);
+    }
+
+    @Override
     public boolean editStudent(int id, String fieldName, String newValue)  {
+        if (fieldName.equalsIgnoreCase("email") && dao.checkEmailExists(newValue)) {
+            return false;
+        }
         return dao.editStudent(id, fieldName, newValue);
     }
 
@@ -131,9 +144,6 @@ public class AdminSevicesImpl implements IAdminSevices {
 
     @Override
     public boolean deleteStudent(int id) {
-        if (!dao.checkStudentExists(id)) {
-            return false;
-        }
         if (dao.checkStudentAttend(id)) {
             return false;
         }

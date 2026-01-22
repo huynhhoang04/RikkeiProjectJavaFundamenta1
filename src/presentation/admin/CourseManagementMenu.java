@@ -1,5 +1,6 @@
 package presentation.admin;
 
+import business.IAdminSevices;
 import business.impl.AdminSevicesImpl;
 import dao.IAdminDAO;
 import dao.impl.AdminDAOImpl;
@@ -9,14 +10,20 @@ import java.util.List;
 import java.util.Scanner;
 
 public class CourseManagementMenu {
-    Scanner sc = new Scanner(System.in);
-    IAdminDAO dao = new AdminDAOImpl();
-    AdminSevicesImpl services = new AdminSevicesImpl(dao);
+    private Scanner sc ;
+    private IAdminSevices services;
+
+    public CourseManagementMenu(Scanner sc, IAdminSevices services) {
+        this.sc = sc;
+        this.services = services;
+    }
+
     public void showMenu()
     {
         while (true){
             try {
-                System.out.println("================================");
+                System.out.println("═══════════════════════════════════");
+                System.out.println("☰ Menu Quản lý khóa học");
                 System.out.println("1. Hiển thị danh sách khóa học");
                 System.out.println("2. Thêm mới khóa học");
                 System.out.println("3. Chỉnh sửa thông tin khóa học ");
@@ -24,209 +31,177 @@ public class CourseManagementMenu {
                 System.out.println("5. Tìm kiếm theo tên");
                 System.out.println("6. Sắp xếp theo tên hoặc id");
                 System.out.println("7. Quay về menu chính");
-                System.out.println("================================");
-                System.out.print("Nhập lựa chọn : ");
+                System.out.println("═══════════════════════════════════");
+                System.out.print("➜ Nhập lựa chọn : ");
 
-                int choice = sc.nextInt();
-                switch(choice){
-                    case 1:
+                switch(sc.nextLine()){
+                    case "1":
                         handleShowListCourses();
                         break;
-                    case 2:
+                    case "2":
                         handleAddCourse();
                         break;
-                    case 3:
+                    case "3":
                         handleUpdateCourse();
                         break;
-                    case 4:
+                    case "4":
                         handleDeleteCourse();
                         break;
-                    case 5:
+                    case "5":
                         handleFindCourse();
                         break;
-                    case 6:
+                    case "6":
                         handleSortCourse();
                         break;
-                    case 7:
+                    case "7":
                         return;
                     default:
-                        System.out.println("Lựa trọn Invalid");
+                        System.out.println("⚠ Lựa trọn không hợp lệ!");
                 }
             }
             catch (Exception e)
             {
+                System.err.println(e.getMessage());
                 e.printStackTrace();
             }
         }
     }
 
     private void printCourseList(List<Course> list) {
-        System.out.println("-------------------------------------------------------------------------------");
-        System.out.printf("| %-5s | %-25s | %-10s | %-15s |\n", "ID", "Tên Khóa Học", "Thời gian", "Giảng viên");
-        System.out.println("-------------------------------------------------------------------------------");
+        System.out.println("┌───────┬───────────────────────────┬─────────────────┬─────────────────┬────────────┐");
+        System.out.printf("│ %-5s │ %-25s │ %-15s │ %-15s │ %-10s │\n", "ID", "Tên Khóa Học", "Thời lượng(giờ)", "Giảng viên", "Ngày tạo");
+        System.out.println("├───────┼───────────────────────────┼─────────────────┼─────────────────┼────────────┤");
         for (Course c : list) {
-            System.out.printf("| %-5d | %-25s | %-10d | %-15s |\n",
-                    c.getId(), c.getName(), c.getDuration(), c.getInstructor());
+            System.out.printf("│ %-5d │ %-25s │ %-15d │ %-15s │ %-10s │\n",
+                    c.getId(), c.getName(), c.getDuration(), c.getInstructor() , c.getCreated_at());
         }
-        System.out.println("-------------------------------------------------------------------------------");
+        System.out.println("└───────┴───────────────────────────┴─────────────────┴─────────────────┴────────────┘");
+    }
+
+    private int inputCourseId() {
+        while (true) {
+            System.out.print("➜ Nhập ID khóa học(0 để trở về) : ");
+            String input = sc.nextLine().trim();
+            if (input.equals("0")) return 0;
+            if (!input.matches("\\d+")) {
+                System.out.println("⚠ ID phải là số nguyên!");
+                continue;
+            }
+            if (services.checkCourse(Integer.parseInt(input))) {
+                return Integer.parseInt(input);
+            }
+            else {
+                System.out.println("⚠ ID không tồn tại!");
+                continue;
+            }
+        }
     }
 
     public void handleUpdateCourse() {
-        Scanner sc = new Scanner(System.in);
-
-        // 1. Nhập ID khóa học cần sửa
-        System.out.print("Nhập ID khóa học muốn sửa: ");
-        int id = 0;
-        try {
-            id = Integer.parseInt(sc.nextLine());
-        } catch (NumberFormatException e) {
-            System.out.println("❌ ID phải là số!");
-            return;
-        }
-
-        // Kiểm tra ID có tồn tại không (Ông có thể thêm hàm checkCourse vào Service nếu muốn kỹ)
-        // ...
-
+        int id = inputCourseId();
+        if (id == 0) return;
         while (true) {
-            System.out.println("\n========== SỬA KHÓA HỌC ==========");
+            System.out.println("═══════════════════════════════════");
+            System.out.println("☰ Sửa thông tin khóa học");
             System.out.println("1. Sửa Tên");
             System.out.println("2. Sửa Thời lượng");
             System.out.println("3. Sửa Giảng viên");
-            System.out.println("0. Quay lại");
-            System.out.print("Chọn: ");
+            System.out.println("4. Quay lại");
+            System.out.println("═══════════════════════════════════");
+            System.out.print("➜ Nhập lựa chọn : ");
 
             String choice = sc.nextLine();
             boolean isSuccess = false;
 
             switch (choice) {
                 case "1":
-                    System.out.print("Nhập tên mới: ");
+                    System.out.print("➜ Nhập tên mới: ");
                     String name = sc.nextLine();
                     isSuccess = services.updateCourseName(id, name);
                     break;
-
                 case "2":
-                    System.out.print("Nhập thời lượng mới (số): ");
+                    System.out.print("➜ Nhập thời lượng mới (số giờ): ");
                     try {
                         int duration = Integer.parseInt(sc.nextLine());
                         isSuccess = services.updateCourseDuration(id, duration);
                     } catch (Exception e) {
-                        System.out.println("❌ Thời lượng phải là số nguyên!");
+                        System.out.println("⚠ Thời lượng phải là số nguyên!");
                         continue;
                     }
                     break;
-
                 case "3":
-                    System.out.print("Nhập tên giảng viên mới: ");
+                    System.out.print("➜ Nhập tên giảng viên mới: ");
                     String instructor = sc.nextLine();
                     isSuccess = services.updateCourseInstructor(id, instructor);
                     break;
-
-                case "0":
-                    return; // Thoát
-
+                case "4":
+                    return;
                 default:
-                    System.out.println("❌ Chọn sai!");
+                    System.out.println("⚠ Lựa trọn không hợp lệ!");
                     continue;
             }
 
-            // Thông báo kết quả
             if (isSuccess) {
-                System.out.println("✅ Cập nhật thành công!");
+                System.out.println("✔ Cập nhật thành công!");
             } else {
-                System.out.println("❌ Cập nhật thất bại (ID không tồn tại hoặc lỗi hệ thống).");
+                System.out.println("⚠ Cập nhật thất bại lỗi hệ thống.");
             }
         }
     }
 
     public void handleShowListCourses() {
-        Scanner sc = new Scanner(System.in);
-
-        System.out.println("\n========== DANH SÁCH KHÓA HỌC ==========");
-
-        // 1. GỌI SERVICE
+        System.out.println("═══════════════════════════════════");
+        System.out.println("𝄜 DANH SÁCH KHÓA HỌC");
         List<Course> list = services.showListCourse();
-
-        // 2. HIỂN THỊ
         if (list.isEmpty()) {
-            System.out.println("⚠️ Hệ thống chưa có khóa học nào!");
+            System.out.println("⚠ Hệ thống chưa có khóa học nào!");
         } else {
-            // Kẻ bảng header
-            System.out.println("-------------------------------------------------------------------------------");
-            // Giả sử Course có: id, name, duration, instructor, status
-            System.out.printf("| %-5s | %-25s | %-10s | %-15s |\n",
-                    "ID", "Tên Khóa Học", "Thời gian", "Giảng viên");
-            System.out.println("-------------------------------------------------------------------------------");
-
-            // Loop in dữ liệu
-            for (Course c : list) {
-                System.out.printf("| %-5d | %-25s | %-10d | %-15s |\n",
-                        c.getId(),
-                        c.getName(),
-                        c.getDuration(),
-                        c.getInstructor());
-            }
-            System.out.println("-------------------------------------------------------------------------------");
+            printCourseList(list);
         }
-
-        // Dừng màn hình để user đọc
+        System.out.println("═══════════════════════════════════");
         System.out.println("Ấn Enter để quay lại...");
         sc.nextLine();
     }
 
     public void handleSortCourse() {
-        Scanner sc = new Scanner(System.in);
-
         while (true) {
-            System.out.println("\n========== SẮP XẾP KHÓA HỌC ==========");
+            System.out.println("═══════════════════════════════════");
+            System.out.println("☰ SẮP XẾP KHÓA HỌC ");
             System.out.println("1. Theo Tên (A -> Z)");
             System.out.println("2. Theo Tên (Z -> A)");
             System.out.println("3. Theo Thời lượng (Thấp -> Cao)");
             System.out.println("4. Theo Thời lượng (Cao -> Thấp)");
-            System.out.println("0. Quay lại");
-            System.out.print("👉 Mời chọn: ");
+            System.out.println("5. Quay lại");
+            System.out.println("═══════════════════════════════════");
+            System.out.print("➜ Nhập lựa chọn : ");
 
             String choice = sc.nextLine().trim();
-
-            if (choice.equals("0")) break;
-
+            if (choice.equals("5")) break;
             String sortBy = "";
             String sortOrder = "";
 
             switch (choice) {
                 case "1":
-                    sortBy = "name"; sortOrder = "asc"; // Tăng dần
+                    sortBy = "name"; sortOrder = "asc";
                     break;
                 case "2":
-                    sortBy = "name"; sortOrder = "desc"; // Giảm dần
+                    sortBy = "name"; sortOrder = "desc";
                     break;
                 case "3":
-                    sortBy = "duration"; sortOrder = "asc"; // Tăng dần
+                    sortBy = "duration"; sortOrder = "asc";
                     break;
                 case "4":
-                    sortBy = "duration"; sortOrder = "desc"; // Giảm dần
+                    sortBy = "duration"; sortOrder = "desc";
                     break;
                 default:
-                    System.out.println("❌ Lựa chọn không hợp lệ!");
+                    System.out.println("⚠ Lựa chọn không hợp lệ!");
                     continue;
             }
-
-            // --- GỌI SERVICE ---
             List<Course> result = services.sortListCourse(sortBy, sortOrder);
-
-            // --- IN KẾT QUẢ ---
             if (result.isEmpty()) {
-                System.out.println("⚠️ Danh sách trống.");
+                System.out.println("⚠ Danh sách trống.");
             } else {
-                System.out.println("-------------------------------------------------------------------------------");
-                System.out.printf("| %-5s | %-25s | %-10s | %-15s |\n", "ID", "Tên Khóa Học", "Thời gian", "Giảng viên");
-                System.out.println("-------------------------------------------------------------------------------");
-
-                for (Course c : result) {
-                    System.out.printf("| %-5d | %-25s | %-10d | %-15s |\n",
-                            c.getId(), c.getName(), c.getDuration(), c.getInstructor());
-                }
-                System.out.println("-------------------------------------------------------------------------------");
+                printCourseList(result);
             }
 
             System.out.println("Ấn Enter để tiếp tục...");
@@ -235,139 +210,104 @@ public class CourseManagementMenu {
     }
 
     public void handleFindCourse() {
-        Scanner sc = new Scanner(System.in);
-
         while (true) {
-            System.out.println("\n========== TÌM KIẾM KHÓA HỌC ==========");
-            System.out.print("👉 Nhập từ khóa tên môn học (hoặc ấn Enter để quay lại): ");
+            System.out.println("═══════════════════════════════════");
+            System.out.println("⌕ TÌM KIẾM KHÓA HỌC ");
+            System.out.print("➜ Nhập từ khóa tên môn học (hoặc exit để quay lại): ");
             String key = sc.nextLine().trim();
+            System.out.println("═══════════════════════════════════");
 
-            // Nếu user không nhập gì và enter -> Thoát
-            if (key.isEmpty()) break;
+            if (key.equalsIgnoreCase("exit")) return;
 
-            // GỌI SERVICE (Hàm findCourseByKey ông vừa viết)
             List<Course> result = services.findCourseByKey(key);
 
-            // HIỂN THỊ KẾT QUẢ
             if (result.isEmpty()) {
-                System.out.println("❌ Không tìm thấy khóa học nào chứa: \"" + key + "\"");
+                System.out.println("⚠ Không tìm thấy khóa học nào chứa: \"" + key + "\"");
             } else {
-                System.out.println("✅ Tìm thấy " + result.size() + " kết quả:");
-                // Gọi lại hàm in bảng cho đẹp (Hàm printCourseList tôi đưa ở tin nhắn trước)
+                System.out.println("✔ Tìm thấy " + result.size() + " kết quả:");
                 printCourseList(result);
             }
         }
     }
 
     public void handleDeleteCourse() {
-        Scanner sc = new Scanner(System.in);
 
         while (true) {
-            System.out.println("\n========== XÓA KHÓA HỌC ==========");
-            // Nên hiển thị danh sách để user biết ID mà xóa
-            // services.showListCourse(); (Tùy ông)
-
-            System.out.print("👉 Nhập ID khóa học cần xóa (hoặc 0 để quay lại): ");
-            String input = sc.nextLine().trim();
-
-            // Validate nhập số
-            if (!input.matches("\\d+")) {
-                System.out.println("❌ ID phải là số nguyên!");
-                continue;
-            }
-
-            int courseId = Integer.parseInt(input);
-            if (courseId == 0) break; // Thoát
-
-            // Xác nhận lại cho chắc (Xóa là việc quan trọng)
-            System.out.print("⚠️ Bạn có chắc chắn muốn xóa khóa học ID " + courseId + "? (y/n): ");
+            System.out.println("═══════════════════════════════════");
+            System.out.println("🗑 XÓA KHÓA HỌC ");
+            int input = inputCourseId();
+            if (input == 0) return;
+            System.out.print("➜ Bạn có chắc chắn muốn xóa khóa học ID " + input + "? (y/n): ");
             String confirm = sc.nextLine();
-
+            System.out.println("═══════════════════════════════════");
             if (!confirm.equalsIgnoreCase("y")) {
-                System.out.println("🚫 Đã hủy thao tác xóa.");
+                System.out.println(" ⃠  Đã hủy thao tác xóa.");
                 continue;
             }
-
-            // GỌI SERVICE
-            boolean isDeleted = services.deleteCourse(courseId);
-
-            // XỬ LÝ KẾT QUẢ
+            boolean isDeleted = services.deleteCourse(input);
             if (isDeleted) {
-                System.out.println("✅ Xóa khóa học thành công!");
-                break; // Xóa xong thì thoát ra menu chính luôn
+                System.out.println("✔ Xóa khóa học thành công!");
+                break;
             } else {
-                System.out.println("❌ Xóa thất bại!");
-                System.out.println("👉 Nguyên nhân: ID không tồn tại HOẶC Khóa học đang có học viên theo học.");
+                System.out.println("⚠ Xóa thất bại lỗi hệ thống!");
             }
         }
+        System.out.println("Ấn Enter để quay lại...");
+        sc.nextLine();
     }
 
     public void handleAddCourse() {
-        Scanner sc = new Scanner(System.in);
 
         while (true) {
-            System.out.println("\n========== THÊM KHÓA HỌC MỚI ==========");
+            System.out.println("═══════════════════════════════════");
+            System.out.println("✚ THÊM KHÓA HỌC MỚI ");
             System.out.println("(Gõ 'exit' để hủy và quay lại menu chính)");
-
             try {
-                // 1. NHẬP TÊN KHÓA HỌC
-                System.out.print("👉 Nhập tên khóa học: ");
+                System.out.print("➜ Nhập tên khóa học: ");
                 String name = sc.nextLine().trim();
                 if (name.equalsIgnoreCase("exit")) break;
-
                 if (name.isEmpty()) {
-                    System.out.println("❌ Tên khóa học không được để trống!");
+                    System.out.println("⚠ Tên khóa học không được để trống!");
                     continue;
                 }
 
-                // 2. NHẬP THỜI LƯỢNG (Phải validate số)
-                System.out.print("👉 Nhập thời lượng (số giờ/buổi): ");
+                System.out.print("➜ Nhập thời lượng (số giờ): ");
                 String durationStr = sc.nextLine().trim();
                 if (durationStr.equalsIgnoreCase("exit")) break;
 
                 int duration = 0;
                 try {
                     duration = Integer.parseInt(durationStr);
-                    // Validate logic cơ bản ở View luôn cho nhanh
                     if (duration <= 0) {
-                        System.out.println("❌ Thời lượng phải lớn hơn 0!");
+                        System.out.println("⚠ Thời lượng phải lớn hơn 0!");
                         continue;
                     }
                 } catch (NumberFormatException e) {
-                    System.out.println("❌ Thời lượng phải là một số nguyên (Ví dụ: 30, 45)!");
+                    System.out.println("⚠ Thời lượng phải là một số nguyên (Ví dụ: 18, 36)!");
                     continue;
                 }
-
-                // 3. NHẬP TÊN GIẢNG VIÊN
-                System.out.print("👉 Nhập tên giảng viên: ");
+                System.out.print("➜ Nhập tên giảng viên: ");
                 String instructor = sc.nextLine().trim();
                 if (instructor.equalsIgnoreCase("exit")) break;
 
                 if (instructor.isEmpty()) {
-                    System.out.println("❌ Tên giảng viên không được để trống!");
+                    System.out.println("⚠ Tên giảng viên không được để trống!");
                     continue;
                 }
-
-                // --- GỌI SERVICE ---
-                // Hàm service của ông check duration <= 0 trả về false,
-                // nhưng ở trên View tôi đã chặn trước rồi cho chắc.
+                System.out.println("═══════════════════════════════════");
                 boolean isSuccess = services.addCourse(name, duration, instructor);
-
-                // --- KẾT QUẢ ---
                 if (isSuccess) {
-                    System.out.println("✅ Thêm khóa học thành công!");
-
-                    // Hỏi xem có muốn nhập tiếp không
-                    System.out.print("Bạn có muốn thêm khóa khác không? (y/n): ");
-                    if (sc.nextLine().trim().equalsIgnoreCase("n")) {
+                    System.out.println("✔ Thêm khóa học thành công!");
+                    System.out.print("➜ Bạn có muốn thêm khóa khác không? (y/n): ");
+                    if (!sc.nextLine().trim().equalsIgnoreCase("y")) {
                         break;
                     }
                 } else {
-                    System.out.println("❌ Thêm thất bại! (Có thể do lỗi hệ thống).");
+                    System.out.println("⚠ Thêm thất bại! Có thể do lỗi hệ thống.");
                 }
 
             } catch (Exception e) {
-                System.out.println("❌ Đã xảy ra lỗi: " + e.getMessage());
+                System.out.println(e.getMessage());
             }
         }
     }
