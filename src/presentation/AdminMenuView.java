@@ -30,7 +30,9 @@ public class AdminMenuView {
                 System.out.println("5. Đăng xuất");
                 System.out.println("═══════════════════════════════════");
                 System.out.print("➜ Nhập lựa trọn : ");
-                switch (sc.nextLine()){
+                String choice = sc.nextLine().trim();
+                if (choice.isEmpty()) continue;
+                switch (choice){
                     case "1":
                         CourseManagementMenu  cm = new CourseManagementMenu(sc,services);
                         cm.showMenu();

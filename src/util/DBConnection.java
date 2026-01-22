@@ -5,11 +5,11 @@ import java.io.InputStream;
 import java.sql.*;
 import java.util.Properties;
 
-public class DBConection {
+public class DBConnection {
 
     public static Connection getConnection() {
         Connection conn = null;
-        try (InputStream in = DBConection.class.getClassLoader().getResourceAsStream("dbconfig.properties");
+        try (InputStream in = DBConnection.class.getClassLoader().getResourceAsStream("dbconfig.properties");
              ) {
             Properties properties = new Properties();
             if(in != null) {

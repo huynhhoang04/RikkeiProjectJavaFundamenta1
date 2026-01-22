@@ -108,7 +108,7 @@ public class StudentServicesImpl implements IStudentServices {
         });
         history.sort((o1, o2) -> o1.getRegisteredAt().compareTo(o2.getRegisteredAt()));
         String lastCourse = history.get(history.size() - 1).getCourseName();
-        String key[] = lastCourse.toLowerCase().replaceAll("[^a-zA-Z0-9à-ỹ\\s]", " ").trim().split("\\s+");
+        String key[] = lastCourse.toLowerCase().replaceAll("[^a-zà-ỹ\\s]", " ").trim().split("\\s+");
 
         allCourses.forEach(course -> {
             for (String keyword : key) {

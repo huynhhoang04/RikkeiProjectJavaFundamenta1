@@ -27,7 +27,9 @@ public class StudentMenuView {
             System.out.println("6. Đăng xuất");
             System.out.println("═══════════════════════════════════");
             System.out.print("➜ Nhập lựa trọn : ");
-            switch (sc.nextLine()){
+            String choice = sc.nextLine().trim();
+            if (choice.isEmpty()) continue;
+            switch (choice){
                 case "1":
                     ReviewCourseMenu rcm = new ReviewCourseMenu(sc,services);
                     rcm.showMenu(id);

@@ -26,7 +26,9 @@ public class EnrollmentManagementMenu {
             System.out.println("4. Trở về");
             System.out.println("═══════════════════════════════════");
             System.out.print("➜ Nhập lựa chọn : ");
-            switch(sc.nextLine()){
+            String choice = sc.nextLine().trim();
+            if (choice.isEmpty()) continue;
+            switch(choice){
                 case "1":
                     handleShowEnrollmentByCourse();
                     break;

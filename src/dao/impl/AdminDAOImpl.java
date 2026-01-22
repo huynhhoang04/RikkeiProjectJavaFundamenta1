@@ -7,7 +7,7 @@ import model.Student;
 import model.dto.EnrollmentDetailDTO;
 import org.mindrot.jbcrypt.BCrypt;
 import util.CourseMapper;
-import util.DBConection;
+import util.DBConnection;
 import util.StudentMapper;
 
 import java.sql.*;
@@ -20,7 +20,7 @@ public class AdminDAOImpl implements IAdminDAO {
     @Override
     public Admin checkAdmin(String InputUsername, String InputPassword) {
         String query = "SELECT id, username, password FROM admin WHERE username=? ";
-        try (Connection conn = DBConection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
             prest.setString(1, InputUsername);
             ResultSet rs = prest.executeQuery();
@@ -43,7 +43,7 @@ public class AdminDAOImpl implements IAdminDAO {
     public List<Course> listCourse() {
         String query = "SELECT * FROM course";
         List<Course> courses = new ArrayList<>();
-        try (Connection conn = DBConection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
             ResultSet rs = prest.executeQuery();
             while (rs.next()) {
@@ -60,7 +60,7 @@ public class AdminDAOImpl implements IAdminDAO {
     @Override
     public boolean addCourse(String InputName, int InputDuration,  String InputInstructor) {
         String query = "INSERT INTO course(name, duration, instructor) VALUES (?,?,?)";
-        try (Connection conn = DBConection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
             prest.setString(1, InputName);
             prest.setInt(2, InputDuration);
@@ -77,7 +77,7 @@ public class AdminDAOImpl implements IAdminDAO {
     @Override
     public boolean updateCourseName(int courseId, String newName) {
         String query = "UPDATE course SET name = ? WHERE id = ?";
-        try (Connection conn = DBConection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setString(1, newName);
             ps.setInt(2, courseId);
@@ -92,7 +92,7 @@ public class AdminDAOImpl implements IAdminDAO {
     @Override
     public boolean updateCourseDuration(int courseid, int newDuration) {
         String query = "UPDATE course SET duration = ? WHERE id = ?";
-        try (Connection conn = DBConection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, newDuration);
             ps.setInt(2, courseid);
@@ -107,7 +107,7 @@ public class AdminDAOImpl implements IAdminDAO {
     @Override
     public boolean updateCourseInstructor(int courseid, String newInstructor) {
         String query = "UPDATE course SET instructor = ? WHERE id = ?";
-        try (Connection conn = DBConection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setString(1, newInstructor);
             ps.setInt(2, courseid);
@@ -123,7 +123,7 @@ public class AdminDAOImpl implements IAdminDAO {
     public List<Course> findCourse(String key) {
         String query = "SELECT * FROM course WHERE name ilike ?";
         List<Course> courses = new ArrayList<>();
-        try (Connection conn = DBConection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
             String searchformat = "%" + key + "%";
             prest.setString(1, searchformat);
@@ -147,7 +147,7 @@ public class AdminDAOImpl implements IAdminDAO {
     @Override
     public boolean checkCourse(int courseId) {
         String query = "SELECT count(*) FROM course WHERE id=?";
-        try (Connection conn = DBConection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
             prest.setInt(1, courseId);
             ResultSet rs = prest.executeQuery();
@@ -165,7 +165,7 @@ public class AdminDAOImpl implements IAdminDAO {
     @Override
     public boolean deleteCourse(int courseId) {
         String query = "DELETE FROM course WHERE id=?";
-        try (Connection conn = DBConection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, courseId);
             int change = ps.executeUpdate();
@@ -180,7 +180,7 @@ public class AdminDAOImpl implements IAdminDAO {
     @Override
     public boolean checkCourseHasStudent(int courseId) {
         String query = "SELECT count(*) FROM enrollment WHERE course_id = ?";
-        try (Connection conn = DBConection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, courseId);
             ResultSet rs = ps.executeQuery();
@@ -198,7 +198,7 @@ public class AdminDAOImpl implements IAdminDAO {
     public List<Student> listStudent() {
         String query = "SELECT * FROM student";
         List<Student> students = new ArrayList<>();
-        try (Connection conn = DBConection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
             ResultSet rs = prest.executeQuery();
             while (rs.next()) {
@@ -217,7 +217,7 @@ public class AdminDAOImpl implements IAdminDAO {
     public boolean addStudent(String InputName, Date InputDOB, String InputEmail, Boolean InputGender, String InputPhoneNumber, String InputPassword) {
         String hashpw = BCrypt.hashpw(InputPassword, BCrypt.gensalt());
         String query = "INSERT INTO student(name, dob, email, gender, phone, password) VALUES (?,?,?,?::bit,?,?)";
-        try (Connection conn = DBConection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
             prest.setString(1, InputName);
             prest.setDate(2, new java.sql.Date(InputDOB.getTime()));
@@ -237,7 +237,7 @@ public class AdminDAOImpl implements IAdminDAO {
     @Override
     public boolean checkEmailExists(String InputEmail) {
         String query = "SELECT count(*) AS cnt FROM student WHERE email = ?";
-        try (Connection conn = DBConection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)){
             prest.setString(1, InputEmail);
             ResultSet rs = prest.executeQuery();
@@ -275,7 +275,7 @@ public class AdminDAOImpl implements IAdminDAO {
             default: return false;
         }
         String query = "UPDATE student SET " + column + " = ?" + cast +" WHERE id = ?";
-        try (Connection conn = DBConection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setString(1, newValue);
             ps.setInt(2, studentId);
@@ -299,7 +299,7 @@ public class AdminDAOImpl implements IAdminDAO {
             return students;
         }
         String query ="SELECT * FROM student WHERE " + column +" ilike ?";
-        try (Connection conn = DBConection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
             String str = "%"+key+"%";
             prest.setString(1, str);
@@ -318,7 +318,7 @@ public class AdminDAOImpl implements IAdminDAO {
     @Override
     public boolean deleteStudent(int studentId) {
         String query = "DELETE FROM student WHERE id=?";
-        try (Connection conn = DBConection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, studentId);
             int change =  ps.executeUpdate();
@@ -333,7 +333,7 @@ public class AdminDAOImpl implements IAdminDAO {
     @Override
     public boolean checkStudentAttend(int studentId) {
         String query = "SELECT COUNT(*) FROM enrollment WHERE student_id = ?";
-        try (Connection conn = DBConection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, studentId);
             ResultSet rs = ps.executeQuery();
@@ -350,7 +350,7 @@ public class AdminDAOImpl implements IAdminDAO {
     @Override
     public boolean checkStudentExists(int studentId) {
         String query = "SELECT count(*) FROM student WHERE id=?";
-        try (Connection conn = DBConection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
             prest.setInt(1, studentId);
             ResultSet rs = prest.executeQuery();
@@ -373,7 +373,7 @@ public class AdminDAOImpl implements IAdminDAO {
                  "JOIN student s ON e.student_id = s.id " +
                  "JOIN course c ON e.course_id = c.id " +
                  "WHERE e.course_id = ? AND e.status = 'CONFIRM'";
-         try (Connection conn = DBConection.getConnection();
+         try (Connection conn = DBConnection.getConnection();
               PreparedStatement prest = conn.prepareStatement(query)) {
             prest.setInt(1, courseId);
             ResultSet rs = prest.executeQuery();
@@ -397,7 +397,7 @@ public class AdminDAOImpl implements IAdminDAO {
     @Override
     public boolean clarifyEnrollment(int enrollmentId, String action) {
         String query = "UPDATE enrollment SET status = ?::course_status WHERE id = ?";
-        try (Connection conn = DBConection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query);) {
             prest.setString(1, action);
             prest.setInt(2, enrollmentId);
@@ -418,7 +418,7 @@ public class AdminDAOImpl implements IAdminDAO {
                 "JOIN student s ON e.student_id = s.id " +
                 "JOIN course c ON e.course_id = c.id " +
                 "WHERE e.course_id = ? AND e.status = 'WAITING'";
-        try (Connection conn = DBConection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
             prest.setInt(1, enrollmentId);
             ResultSet rs = prest.executeQuery();
@@ -442,8 +442,8 @@ public class AdminDAOImpl implements IAdminDAO {
     @Override
     public boolean deleteEnrollment(int enrollmentId) {
         String query = "DELETE FROM enrollment WHERE id = ? and status = 'CONFIRM'";
-        try (Connection conn = DBConection.getConnection();
-            PreparedStatement prest = conn.prepareStatement(query)) {
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement prest = conn.prepareStatement(query)) {
             prest.setInt(1, enrollmentId);
             int change = prest.executeUpdate();
             return change > 0;
@@ -461,7 +461,7 @@ public class AdminDAOImpl implements IAdminDAO {
                 "(SELECT COUNT(id) FROM course) AS total_course,\n" +
                 "    (SELECT COUNT(id) FROM student) AS total_student;";
         Map<String, Integer> map = new HashMap<>();
-        try (Connection conn = DBConection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
             ResultSet rs = prest.executeQuery();
             if (rs.next()) {
@@ -483,7 +483,7 @@ public class AdminDAOImpl implements IAdminDAO {
                 "left join enrollment e on c.id = e.course_id and e.status='CONFIRM'\n" +
                 "group by c.id";
         Map<String, Integer> map = new HashMap<>();
-        try (Connection conn = DBConection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
             ResultSet rs = prest.executeQuery();
             while (rs.next()) {

@@ -30,8 +30,9 @@ public class CourseManagementMenu {
                 System.out.println("7. Quay về menu chính");
                 System.out.println("═══════════════════════════════════");
                 System.out.print("➜ Nhập lựa chọn : ");
-
-                switch(sc.nextLine()){
+                String choice = sc.nextLine().trim();
+                if (choice.isEmpty()) continue;
+                switch(choice){
                     case "1":
                         handleShowListCourses();
                         break;

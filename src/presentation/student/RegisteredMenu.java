@@ -23,7 +23,9 @@ public class RegisteredMenu {
             System.out.println("3. Trở về");
             System.out.println("═══════════════════════════════════");
             System.out.print("➜ Nhập lựa trọn : ");
-            switch (sc.nextLine()){
+            String choice = sc.nextLine().trim();
+            if (choice.isEmpty()) continue;
+            switch (choice){
                 case "1":
                     showMyHistory(studentID);
                     break;
