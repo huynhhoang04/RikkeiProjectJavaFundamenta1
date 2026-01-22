@@ -75,31 +75,25 @@ public class AnalyzeMenu {
     }
 
     private void handleAllCoursesStats() {
-        System.out.println("═══════════════════════════════════════════════════════════════");
         System.out.println("𝄜 SỐ LƯỢNG HỌC VIÊN THEO KHÓA ");
         Map<String, Integer> data = services.showTotalStudentsByCourse();
         printTable(data);
-        System.out.println("═══════════════════════════════════════════════════════════════");
         System.out.println("Ấn Enter để quay lại...");
         sc.nextLine();
     }
 
     private void handleTop5Stats() {
-        System.out.println("═══════════════════════════════════════════════════════════════");
         System.out.println("♕ TOP 5 KHÓA HỌC ĐÔNG NHẤT ");
         Map<String, Integer> data = services.Top5CourseWithStudents();
         printTable(data);
-        System.out.println("═══════════════════════════════════════════════════════════════");
         System.out.println("Ấn Enter để quay lại...");
         sc.nextLine();
     }
 
     private void handleThresholdStats() {
-        System.out.println("═══════════════════════════════════════════════════════════════");
         System.out.println("𝇕 CÁC KHÓA HỌC ĐẠT TRÊN 10 HỌC VIÊN ");
         Map<String, Integer> data = services.CourseWithMoreThan10Students();
         printTable(data);
-        System.out.println("═══════════════════════════════════════════════════════════════");
         System.out.println("Ấn Enter để quay lại...");
         sc.nextLine();
     }

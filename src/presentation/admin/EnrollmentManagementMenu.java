@@ -78,7 +78,6 @@ public class EnrollmentManagementMenu {
     private void handleShowEnrollmentByCourse() {
         int courseId = inputCourseId();
         if (courseId == 0) return;
-        System.out.println("══════════════════════════════════════════════════════════════════════════════════");
         System.out.println("𝄜 XEM DANH SÁCH ĐĂNG KÝ ");
         List<EnrollmentDetailDTO> list = services.getCourseEnrollments(courseId);
 
@@ -89,7 +88,6 @@ public class EnrollmentManagementMenu {
         } else {
             printList(list);
         }
-        System.out.println("═══════════════════════════════════════════════════════════════════════════════════");
         System.out.println("Ấn Enter để quay lại...");
         sc.nextLine();
     }
@@ -143,6 +141,8 @@ public class EnrollmentManagementMenu {
                     System.out.println("⚠ Chọn sai thao tác!");
                 }
             }
+            System.out.println("Ấn Enter để quay lại...");
+            sc.nextLine();
         }
     }
 
@@ -193,5 +193,7 @@ public class EnrollmentManagementMenu {
                 System.out.println(" ⃠  Đã hủy thao tác.");
             }
         }
+        System.out.println("Ấn Enter để quay lại...");
+        sc.nextLine();
     }
 }

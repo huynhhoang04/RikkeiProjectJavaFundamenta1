@@ -143,11 +143,12 @@ public class CourseManagementMenu {
             } else {
                 System.out.println("⚠ Cập nhật thất bại lỗi hệ thống.");
             }
+            System.out.println("Ấn Enter để quay lại...");
+            sc.nextLine();
         }
     }
 
     public void handleShowListCourses() {
-        System.out.println("═══════════════════════════════════");
         System.out.println("𝄜 DANH SÁCH KHÓA HỌC");
         List<Course> list = services.showListCourse();
         if (list.isEmpty()) {
@@ -155,7 +156,6 @@ public class CourseManagementMenu {
         } else {
             printCourseList(list);
         }
-        System.out.println("═══════════════════════════════════");
         System.out.println("Ấn Enter để quay lại...");
         sc.nextLine();
     }
@@ -224,6 +224,8 @@ public class CourseManagementMenu {
                 System.out.println("✔ Tìm thấy " + result.size() + " kết quả:");
                 printCourseList(result);
             }
+            System.out.println("Ấn Enter để quay lại...");
+            sc.nextLine();
         }
     }
 

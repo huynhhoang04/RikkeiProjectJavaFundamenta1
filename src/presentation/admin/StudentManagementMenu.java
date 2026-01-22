@@ -103,11 +103,9 @@ public class StudentManagementMenu {
     }
 
     public void handleShowListStudent() {
-        System.out.println("═══════════════════════════════════");
         System.out.println("𝄜 DANH SÁCH HỌC VIÊN ");
         List<Student> list = services.showListStudent();
         printStudentList(list);
-        System.out.println("═══════════════════════════════════");
         System.out.println("Ấn Enter để quay lại...");
         sc.nextLine();
     }
@@ -251,6 +249,8 @@ public class StudentManagementMenu {
             } else {
                 System.out.println("⚠ Thất bại (Lỗi hệ thống hoặc trùng Email)!");
             }
+            System.out.println("Ấn Enter để quay lại...");
+            sc.nextLine();
         }
     }
 
@@ -321,6 +321,8 @@ public class StudentManagementMenu {
                 System.err.println("⚠ Xóa thất bại!");
                 System.out.println("👉 Nguyên nhân: Học viên đang đang tham gia khóa học!");
             }
+            System.out.println("Ấn Enter để quay lại...");
+            sc.nextLine();
         }
     }
 
@@ -359,6 +361,8 @@ public class StudentManagementMenu {
                 System.out.println("✔ Tìm thấy " + result.size() + " kết quả:");
                 printStudentList(result);
             }
+            System.out.println("Ấn Enter để quay lại...");
+            sc.nextLine();
         }
     }
 }
