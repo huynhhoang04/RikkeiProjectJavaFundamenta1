@@ -70,7 +70,7 @@ public class StudentManagementMenu {
     // in bảng danh sách học viên
     private void printStudentList(List<Student> list) {
         if (list.isEmpty()) {
-            System.out.println("⚠️ Danh sách trống.");
+            System.out.println("⚠ Danh sách trống.");
             return;
         }
         System.out.println("┌───────┬──────────────────────┬──────────────┬───────────────────────────┬────────────┬────────────┐");
@@ -338,7 +338,7 @@ public class StudentManagementMenu {
             //input id hv và xác nhận xóa
             int studentID = inputStudentId();
             if (studentID == 0) return;
-            System.out.print("⚠️ Bạn có chắc chắn muốn xóa học viên ID " + studentID + "? (y/n): ");
+            System.out.print("⚠ Bạn có chắc chắn muốn xóa học viên ID " + studentID + "? (y/n): ");
             String confirm = sc.nextLine();
             System.out.println("═══════════════════════════════════");
             if (!confirm.equalsIgnoreCase("y")) {
