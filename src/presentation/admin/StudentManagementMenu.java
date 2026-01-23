@@ -89,7 +89,7 @@ public class StudentManagementMenu {
     // nhập và kiểm tra id học viên
     private int inputStudentId() {
         while (true) {
-            System.out.print("➜ Nhập ID học viên : ");
+            System.out.print("➜ Nhập ID học viên(0 để thoát) : ");
             String input = sc.nextLine().trim();
             if (input.equals("0")) return 0;
             // check số
@@ -202,12 +202,15 @@ public class StudentManagementMenu {
             } catch (Exception e) {
                 System.out.println("⚠ Lỗi nhập liệu: " + e.getMessage());
             }
+            System.out.println("Ấn Enter để quay lại...");
+            sc.nextLine();
         }
     }
 
     // sửa học viên
     public void handleEditStudent() {
         int id = inputStudentId();
+        if (id == 0) return;
         while (true) {
             System.out.println("═══════════════════════════════════");
             System.out.println("☰ CHỌN MỤC CẦN SỬA");
@@ -334,6 +337,7 @@ public class StudentManagementMenu {
             System.out.println("🗑 XÓA HỌC VIÊN");
             //input id hv và xác nhận xóa
             int studentID = inputStudentId();
+            if (studentID == 0) return;
             System.out.print("⚠️ Bạn có chắc chắn muốn xóa học viên ID " + studentID + "? (y/n): ");
             String confirm = sc.nextLine();
             System.out.println("═══════════════════════════════════");
@@ -346,7 +350,6 @@ public class StudentManagementMenu {
             boolean isDeleted = services.deleteStudent(studentID);
             if (isDeleted) {
                 System.out.println("✔ Xóa học viên thành công!");
-                break;
             } else {
                 System.err.println("⚠ Xóa thất bại!");
                 System.out.println("⚠ Nguyên nhân: Học viên đang đang tham gia khóa học!");

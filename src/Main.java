@@ -46,7 +46,7 @@ public class Main {
                     studentLogin.showStudentLogin();
                     break;
                 case "3":
-                    System.exit(36);
+                    System.exit(0);
                 default:
                     System.out.println("Lựa chọn Invalid ");
             }

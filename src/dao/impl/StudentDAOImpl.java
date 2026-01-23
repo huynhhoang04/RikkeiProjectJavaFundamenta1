@@ -227,8 +227,8 @@ public class StudentDAOImpl implements IStudentDAO {
         String query = "SELECT count(*) FROM enrollment WHERE id = ? AND student_id = ? AND status = 'WAITING'";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement prest = conn.prepareStatement(query)) {
-            prest.setInt(1, studentID);
-            prest.setInt(2, enrollmentID);
+            prest.setInt(1, enrollmentID);
+            prest.setInt(2, studentID);
             ResultSet rs = prest.executeQuery();
             if (rs.next()) {
                 return  rs.getInt(1) > 0;
